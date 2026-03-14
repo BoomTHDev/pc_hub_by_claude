@@ -1,3 +1,54 @@
 import { Routes } from '@angular/router';
+import { StorefrontLayout } from './layouts/storefront/storefront-layout';
+import { authGuard } from './core/guards/auth.guard';
+import { guestGuard } from './core/guards/guest.guard';
 
-export const routes: Routes = [];
+export const routes: Routes = [
+  {
+    path: '',
+    component: StorefrontLayout,
+    children: [
+      {
+        path: '',
+        loadComponent: () =>
+          import('./features/home/home').then((m) => m.Home),
+      },
+      {
+        path: 'login',
+        canActivate: [guestGuard],
+        loadComponent: () =>
+          import('./features/auth/login/login').then((m) => m.Login),
+      },
+      {
+        path: 'register',
+        canActivate: [guestGuard],
+        loadComponent: () =>
+          import('./features/auth/register/register').then((m) => m.Register),
+      },
+      {
+        path: 'account/addresses',
+        canActivate: [authGuard],
+        loadComponent: () =>
+          import('./features/account/addresses/address-list').then(
+            (m) => m.AddressList,
+          ),
+      },
+      {
+        path: 'account/addresses/new',
+        canActivate: [authGuard],
+        loadComponent: () =>
+          import('./features/account/addresses/address-form').then(
+            (m) => m.AddressForm,
+          ),
+      },
+      {
+        path: 'account/addresses/:addressId/edit',
+        canActivate: [authGuard],
+        loadComponent: () =>
+          import('./features/account/addresses/address-form').then(
+            (m) => m.AddressForm,
+          ),
+      },
+    ],
+  },
+];

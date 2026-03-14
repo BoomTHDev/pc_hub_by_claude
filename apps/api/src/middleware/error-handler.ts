@@ -17,6 +17,10 @@ export function errorHandler(
     return;
   }
 
+  if (env.NODE_ENV !== 'production') {
+    console.error('Unhandled error:', err);
+  }
+
   const message =
     env.NODE_ENV === 'production'
       ? 'Internal server error'
