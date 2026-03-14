@@ -13,6 +13,7 @@ import { addressRouter } from './modules/addresses/address.routes.js';
 import { categoryRouter } from './modules/categories/category.routes.js';
 import { brandRouter } from './modules/brands/brand.routes.js';
 import { productRouter } from './modules/products/product.routes.js';
+import { backofficeRouter } from './modules/backoffice/backoffice.routes.js';
 
 const app = express();
 
@@ -60,6 +61,7 @@ app.use('/api/v1/account/addresses', addressRouter);
 app.use('/api/v1/categories', categoryRouter);
 app.use('/api/v1/brands', brandRouter);
 app.use('/api/v1/products', productRouter);
+app.use('/api/v1/backoffice', backofficeRouter);
 
 // 404 handler
 app.use(notFoundHandler);

@@ -85,3 +85,9 @@ A task is not done unless:
 - The changed area is runnable
 - The implementation matches project docs
 - No major security or typing shortcuts were introduced
+
+## Architecture constraints
+- Do not introduce new shared helper files prematurely.
+- Prefer local service-level implementation before extracting shared abstractions.
+- Only extract a shared helper when duplication is already present in multiple places and the abstraction is clearly justified.
+- During implementation phases, keep scope tight and avoid architecture expansion unless explicitly requested.
