@@ -10,6 +10,9 @@ import { errorHandler } from './middleware/error-handler.js';
 import { healthRouter } from './routes/health.routes.js';
 import { authRouter } from './modules/auth/auth.routes.js';
 import { addressRouter } from './modules/addresses/address.routes.js';
+import { categoryRouter } from './modules/categories/category.routes.js';
+import { brandRouter } from './modules/brands/brand.routes.js';
+import { productRouter } from './modules/products/product.routes.js';
 
 const app = express();
 
@@ -54,6 +57,9 @@ app.use(requestLogger);
 app.use('/api/v1', healthRouter);
 app.use('/api/v1/auth', authRouter);
 app.use('/api/v1/account/addresses', addressRouter);
+app.use('/api/v1/categories', categoryRouter);
+app.use('/api/v1/brands', brandRouter);
+app.use('/api/v1/products', productRouter);
 
 // 404 handler
 app.use(notFoundHandler);

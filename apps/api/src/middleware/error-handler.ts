@@ -1,4 +1,5 @@
 import type { Request, Response, NextFunction } from 'express';
+import { z } from 'zod/v4';
 import { AppError } from '../common/errors.js';
 import { env } from '../config/env.js';
 
@@ -13,6 +14,15 @@ export function errorHandler(
       success: false,
       message: err.message,
       code: err.code,
+    });
+    return;
+  }
+
+  if (err instanceof z.ZodError) {
+    res.status(400).json({
+      success: false,
+      message: 'Validation failed',
+      code: 'VALIDATION_ERROR',
     });
     return;
   }
