@@ -2,7 +2,7 @@
 
 ## Overview
 
-Phase 3 is split into three slices to keep scope controlled and reduce implementation risk:
+Phase 3 is split into three slices to keep scope controlled, reduce implementation risk, and make debugging easier:
 
 | Slice | Description |
 |-------|-------------|
@@ -18,20 +18,20 @@ Phase 3A → Phase 3B → Phase 3C
 
 - **Phase 3B** depends on the catalog schema created in 3A
 - **Phase 3C** depends on the public catalog APIs created in 3A
-- 3B and 3C do not depend on each other directly, but backend-first is preferred
+- 3B and 3C do not directly depend on each other, but backend-first is preferred
 
 ---
 
-### Current Status Before Phase 3
+### Current Status
 
 **Completed:**
-- Phase 1: project foundation, tooling, env validation, security middleware, health/readiness, lint/build/test
+- Phase 1: project foundation, tooling, env validation, security middleware, health/readiness endpoints, lint/build/test
 - Phase 2: authentication, session management, role middleware, customer address management
-- Phase 3A: public catalog schema and APIs are completed
+- Phase 3A: public catalog schema and APIs
+- Phase 3B: backoffice catalog management for admin/staff
 
-**Remaining in Phase 3:**
-- Phase 3B
-- Phase 3C
+**Next:**
+- Phase 3C: frontend storefront catalog browsing
 
 ---
 
@@ -47,12 +47,7 @@ Build the catalog data model and public read-only catalog APIs for categories, b
 
 #### Database Models
 
-Add these Prisma models:
-
-- `Category`
-- `Brand`
-- `Product`
-- `ProductImage`
+Add these Prisma models: `Category`, `Brand`, `Product`, `ProductImage`
 
 ---
 
@@ -60,8 +55,8 @@ Add these Prisma models:
 
 ##### Category
 
-| Field | Type |
-|-------|------|
+| Field | Notes |
+|-------|-------|
 | `id` | — |
 | `name` | — |
 | `slug` | unique |
@@ -73,8 +68,8 @@ Add these Prisma models:
 
 ##### Brand
 
-| Field | Type |
-|-------|------|
+| Field | Notes |
+|-------|-------|
 | `id` | — |
 | `name` | — |
 | `slug` | unique |
@@ -86,8 +81,8 @@ Add these Prisma models:
 
 ##### Product
 
-| Field | Type |
-|-------|------|
+| Field | Notes |
+|-------|-------|
 | `id` | — |
 | `categoryId` | — |
 | `brandId` | — |
@@ -104,8 +99,8 @@ Add these Prisma models:
 
 ##### ProductImage
 
-| Field | Type |
-|-------|------|
+| Field | Notes |
+|-------|-------|
 | `id` | — |
 | `productId` | — |
 | `imageUrl` | — |
@@ -226,9 +221,7 @@ GET /api/v1/products/slug/:slug
 | `maxPrice` | optional coerce to number, min 0 |
 | `sort` | enum: `price_asc`, `price_desc`, `newest`, `oldest`, `name_asc`, `name_desc` |
 
-#### Params
-
-Route params use Zod and must coerce to positive integers where applicable.
+> Route params use Zod and must coerce to positive integers where applicable.
 
 ---
 
@@ -246,8 +239,6 @@ All Phase 3A routes are **public**.
 ### Response Behavior
 
 #### List Endpoints
-
-Return paginated responses:
 
 ```json
 {
@@ -269,25 +260,17 @@ Return paginated responses:
 {
   "success": true,
   "message": "...",
-  "data": {...}
+  "data": { ... }
 }
 ```
 
 #### Product List Item Shape
 
-Include:
-- `id`, `name`, `slug`, `sku`, `price`, `stock`, `warrantyMonths`
-- Category summary
-- Brand summary
-- First image URL or `null`
+Includes: `id`, `name`, `slug`, `sku`, `price`, `stock`, `warrantyMonths`, category summary, brand summary, first image URL or `null`
 
 #### Product Detail Shape
 
-Include:
-- Full product fields
-- `category`
-- `brand`
-- Full `images` array ordered by `sortOrder`
+Includes: full product fields, `category`, `brand`, full `images` array ordered by `sortOrder`
 
 #### Decimal Handling
 
@@ -322,9 +305,7 @@ Include:
 - Detail by id works
 - Detail by slug works
 - Nonexistent/inactive returns 404
-- Filters work for `categoryId`
-- Filters work for `brandId`
-- Filters work for price range
+- Filters work for `categoryId`, `brandId`, price range
 - Search works
 - Sorting works
 - Pagination works
@@ -490,9 +471,8 @@ All routes mounted under: `/api/v1/backoffice`
 | Create category/brand/product | ADMIN only |
 | Update category/brand/product | ADMIN only |
 | Delete category/brand/product | ADMIN only |
-| Upload product image | ADMIN only |
-| Delete product image | ADMIN only |
-| List all (incl. inactive) | STAFF or ADMIN |
+| Upload/delete product image | ADMIN only |
+| List all records (incl. inactive) | STAFF or ADMIN |
 | Toggle active/inactive | STAFF or ADMIN |
 | Any backoffice access | ❌ CUSTOMER |
 
@@ -528,7 +508,11 @@ CLOUDINARY_API_KEY
 CLOUDINARY_API_SECRET
 ```
 
-> **Important:** Do not silently treat empty strings as a valid long-term configuration strategy. Image upload/delete routes must fail clearly and safely if Cloudinary is not configured. Tests may mock Cloudinary and must not require real credentials.
+**Important rules:**
+- Do not rely on empty-string defaults as a long-term configuration strategy
+- The app may still start without Cloudinary config so non-image features and tests can run
+- Image upload/delete routes must fail clearly and safely if Cloudinary is not configured
+- Tests may mock Cloudinary and must not require real credentials
 
 #### Upload Flow
 
@@ -548,7 +532,7 @@ CLOUDINARY_API_SECRET
 
 #### Multer Rules
 
-- Use memory storage with 5MB size limit and MIME validation in `fileFilter`
+- Memory storage, 5MB size limit, MIME validation in `fileFilter`
 - Invalid MIME → `400`
 - Oversized file → `400`
 - No file → `400`
@@ -575,9 +559,8 @@ Use Prisma unique constraints for: category slug, brand slug, product slug, prod
 **Brand delete** — Reject with `409` if:
 - Products reference the brand
 
-**Product delete** — Current phase behavior:
-- Product can be deleted
-- Associated product images must be handled explicitly
+**Product delete:**
+- Product can be deleted; associated product images must be handled explicitly
 - Design should remain extensible for future order checks in Phase 5
 
 ---
@@ -587,8 +570,7 @@ Use Prisma unique constraints for: category slug, brand slug, product slug, prod
 **Endpoint:** `POST /:id/toggle-active`
 
 **Behavior:**
-- Load entity by id
-- `404` if not found
+- Load entity by id → `404` if not found
 - Flip `isActive`
 - Return updated id and state
 - **No cascade:** toggling category/brand inactive does not auto-toggle products
@@ -603,7 +585,7 @@ Use Prisma unique constraints for: category slug, brand slug, product slug, prod
 | Delete | `success`, `message` |
 | Toggle | `success`, `message`, `data` (`id` + `isActive`) |
 
-Backoffice list endpoints use paginated response shape consistent with Phase 3A, but **include inactive records** as allowed by role.
+Backoffice list endpoints use the same paginated shape as Phase 3A, but **include inactive records** as allowed by role.
 
 ---
 
@@ -631,8 +613,7 @@ Backoffice list endpoints use paginated response shape consistent with Phase 3A,
 - Nonexistent `brandId` → 404
 - Duplicate slug → 409
 - Duplicate sku → 409
-- Admin update
-- Admin delete
+- Admin update and delete
 - Staff toggle → 200
 - Staff cannot create/update/delete → 403
 - Invalid price/stock validation
@@ -690,8 +671,8 @@ Build the public storefront catalog UI using the APIs from Phase 3A.
 - Fetch categories
 - Fetch brands
 - Fetch product list with filters
-- Fetch product detail by id
 - Fetch product detail by slug
+- List enough categories and brands for filter dropdowns and slug resolution
 
 ---
 
@@ -699,43 +680,33 @@ Build the public storefront catalog UI using the APIs from Phase 3A.
 
 #### Product List
 
-**Route:** `/products`
-
+**Route:** `/products`  
 **Component:** `features/catalog/product-list/product-list.ts`
 
 **Responsibilities:**
 - Render product grid
-- Search
-- Category filter
-- Brand filter
-- Price range filter
-- Sort dropdown
-- Pagination
-- Empty state
+- Search, category filter, brand filter, price range filter
+- Sort dropdown, pagination, empty state
 
 #### Product Detail
 
-**Route:** `/products/:slug`
-
+**Route:** `/products/:slug`  
 **Component:** `features/catalog/product-detail/product-detail.ts`
 
 **Responsibilities:**
-- Render full product info
-- Render image gallery
+- Render full product info and image gallery
 - Show specs
 - Show disabled or hidden add-to-cart button until Phase 4
 
 #### Category-Based Browsing
 
-**Route:** `/categories/:slug`
-
-**Behavior:** Reuse product list with preset category filter
+**Route:** `/categories/:slug`  
+**Behavior:** Reuse product list with preset category filter resolved from slug
 
 #### Brand-Based Browsing
 
-**Route:** `/brands/:slug`
-
-**Behavior:** Reuse product list with preset brand filter
+**Route:** `/brands/:slug`  
+**Behavior:** Reuse product list with preset brand filter resolved from slug
 
 ---
 
@@ -744,91 +715,142 @@ Build the public storefront catalog UI using the APIs from Phase 3A.
 - `shared/components/product-card/product-card.ts`
 - `shared/components/pagination/pagination.ts`
 
+#### Shared Pipe
+
+**Create:** `shared/pipes/thai-baht.pipe.ts`
+
+| Property | Value |
+|----------|-------|
+| Class name | `ThaiBahtPipe` |
+| Pipe name | `thaiBaht` |
+
 #### Layout Updates
 
-Update storefront navigation:
-- Add **Products** link
-- Optional category dropdown later
+Update storefront navigation: add **Products** link
 
 ---
 
-### Validation Rules (Frontend)
+### Query Param Strategy
 
-| Field | Rule |
-|-------|------|
-| `search` | Trimmed, max 200 |
-| `minPrice` | Non-negative |
-| `maxPrice` | Non-negative, ≥ `minPrice` |
-| `page`, `limit` | Positive integers |
+The product list page uses **URL query params as the single source of truth**.
+
+**Supported query params:** `search`, `categoryId`, `brandId`, `minPrice`, `maxPrice`, `sort`, `page`
+
+**Rules:**
+- Do **not** blindly use `queryParamsHandling: 'merge'`
+- Build the next query param object explicitly
+- Drop empty/default values from the URL
+- Reset `page` to 1 when search/filter/sort changes
+- Update only `page` when the user paginates
 
 ---
 
-### Authorization Rules
+### API Integration
 
-All Phase 3C routes are **public**.
+Use only the existing public Phase 3A APIs:
 
-> **UI note:** Add-to-cart is not active yet — cart belongs to Phase 4.
+```
+GET /categories
+GET /brands
+GET /products
+GET /products/slug/:slug
+```
+
+#### Slug to ID Resolution
+
+No backend slug route is added for categories or brands in Phase 3C.
+
+**Frontend strategy:**
+- Fetch categories and brands using public list endpoints with `limit=100`
+- Resolve `/categories/:slug` and `/brands/:slug` by exact slug match in the fetched list
+- If the slug is not found, show an appropriate not-found state
+
+> This is acceptable because category and brand datasets are expected to remain small in this product scope.
+
+---
+
+### State Handling
+
+| State | Behavior |
+|-------|----------|
+| Loading | Show loading UI while requests are pending |
+| Empty | Show friendly empty state with a clear-filters action |
+| Error | Show inline error state with retry action; use safe error extraction helpers |
+| 404 | Product detail by missing slug → not-found state; missing category/brand slug → not-found state |
+
+---
+
+### Image Placeholder Behavior
+
+- Products without images must show a placeholder image
+- Keep placeholder asset local, e.g. `public/images/no-image.svg`
+- Product list uses the summary image if present, otherwise placeholder
+- Product detail uses the full image array if present, otherwise placeholder
+
+---
+
+### Thai Baht Price Formatting
+
+Use `ThaiBahtPipe` for display.
+
+**Rules:**
+- Input is a plain number from the API
+- Use Thai Baht currency formatting consistently
+- Do **not** do ad-hoc inline formatting in templates
 
 ---
 
 ### Test Scope
 
-#### `product-list.spec.ts`
-- Renders products
-- Handles empty state
-- Handles pagination navigation
-
-#### `product-detail.spec.ts`
-- Renders product info
-- Handles 404
-- Handles image gallery
-
-#### `product-card.spec.ts`
-- Renders image, name, price
-
 #### `catalog.service.spec.ts`
 - Builds correct query params
-- Handles API responses safely
+- Handles successful responses
+- Handles error responses safely
 
----
+#### `product-card.spec.ts`
+- Renders name, price, brand, image
+- Renders placeholder when no image is present
+- Links to correct slug route
 
-### UX and Edge Cases
+#### `product-list.spec.ts`
+- Renders products
+- Handles loading, empty, and pagination state
 
-- Image-less products need placeholders
-- Long names should truncate in cards
-- Prices should use **Thai Baht** formatting
-- Empty catalog should show friendly empty state
-- Deep links with query params should restore filters
-- Slug-based detail pages should show `404` state when missing
+#### `product-detail.spec.ts`
+- Renders product data
+- Handles not-found state
+- Handles image gallery
 
----
-
-## Notes
-
-### Phase 3B and Phase 3C Independence
-
-After Phase 3A, both 3B and 3C can technically proceed independently. Preferred order remains:
-
-```
-Phase 3A → Phase 3B → Phase 3C
-```
+#### `thai-baht.pipe.spec.ts`
+- Formats integer and decimal values correctly
 
 ---
 
 ### Type Safety Rules
 
-Across **all** Phase 3 work:
-
+Across Phase 3C:
 - ❌ No `any`
 - ❌ No `unknown` escape hatches
 - ❌ No unsafe type assertions
-- ✅ Use Zod parsing, explicit mappers, typed helpers, and safe narrowing
+- ✅ Use explicit interfaces for API response shapes
+- ✅ Use typed services and typed component inputs
+- ✅ Keep templates strictly typed
 
-## Status Update
+---
 
-Completed:
-- Phase 3A
-- Phase 3B
+## Notes
 
-Next:
-- Phase 3C
+### Phase 3B and 3C Independence
+
+After Phase 3A, both 3B and 3C can proceed independently. Preferred order remains:
+
+```
+Phase 3A → Phase 3B → Phase 3C
+```
+
+### Implementation Style
+
+- Keep components reusable and minimal
+- Keep frontend state local and URL-driven where possible
+- Do not start cart behavior in this phase
+- Add-to-cart remains disabled or hidden until Phase 4
