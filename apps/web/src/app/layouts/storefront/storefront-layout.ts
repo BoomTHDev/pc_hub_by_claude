@@ -12,6 +12,15 @@ import { AuthService } from '../../core/services/auth.service';
           <div class="flex justify-between h-16 items-center">
             <a routerLink="/" class="text-xl font-bold text-gray-900">PC Hub</a>
 
+            <div class="flex items-center gap-6">
+              <a
+                routerLink="/products"
+                class="text-sm font-medium text-gray-600 hover:text-gray-900"
+              >
+                Products
+              </a>
+            </div>
+
             <div class="flex items-center gap-4">
               @if (auth.isAuthenticated()) {
                 <span class="text-sm text-gray-600">

@@ -26,6 +26,34 @@ export const routes: Routes = [
           import('./features/auth/register/register').then((m) => m.Register),
       },
       {
+        path: 'products',
+        loadComponent: () =>
+          import('./features/catalog/product-list/product-list').then(
+            (m) => m.ProductList,
+          ),
+      },
+      {
+        path: 'products/:slug',
+        loadComponent: () =>
+          import('./features/catalog/product-detail/product-detail').then(
+            (m) => m.ProductDetailPage,
+          ),
+      },
+      {
+        path: 'categories/:slug',
+        loadComponent: () =>
+          import('./features/catalog/product-list/product-list').then(
+            (m) => m.ProductList,
+          ),
+      },
+      {
+        path: 'brands/:slug',
+        loadComponent: () =>
+          import('./features/catalog/product-list/product-list').then(
+            (m) => m.ProductList,
+          ),
+      },
+      {
         path: 'account/addresses',
         canActivate: [authGuard],
         loadComponent: () =>

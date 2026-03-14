@@ -1,0 +1,47 @@
+import { Component, input } from '@angular/core';
+import { RouterLink } from '@angular/router';
+import { ThaiBahtPipe } from '../../pipes/thai-baht.pipe';
+import type { ProductSummary } from '../../models/product.model';
+
+@Component({
+  selector: 'app-product-card',
+  imports: [RouterLink, ThaiBahtPipe],
+  template: `
+    <a
+      [routerLink]="['/products', product().slug]"
+      class="group block bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow"
+    >
+      <div class="aspect-square bg-gray-100 overflow-hidden">
+        <img
+          [src]="product().image ?? '/images/no-image.svg'"
+          [alt]="product().name"
+          class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+        />
+      </div>
+      <div class="p-4">
+        <p class="text-xs text-gray-500 mb-1">
+          {{ product().brand.name }}
+        </p>
+        <h3
+          class="text-sm font-medium text-gray-900 line-clamp-2 min-h-10"
+        >
+          {{ product().name }}
+        </h3>
+        <p class="text-xs text-gray-500 mt-1">
+          {{ product().category.name }}
+        </p>
+        <p class="mt-2 text-lg font-bold text-indigo-600">
+          {{ product().price | thaiBaht }}
+        </p>
+        @if (product().stock === 0) {
+          <p class="mt-1 text-xs text-red-600 font-medium">Out of stock</p>
+        } @else {
+          <p class="mt-1 text-xs text-green-600">In stock</p>
+        }
+      </div>
+    </a>
+  `,
+})
+export class ProductCard {
+  readonly product = input.required<ProductSummary>();
+}
