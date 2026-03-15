@@ -103,6 +103,37 @@ export const routes: Routes = [
             (m) => m.BoBrandFormPage,
           ),
       },
+      {
+        path: 'reports/daily-sales',
+        loadComponent: () =>
+          import('./features/backoffice/reports/daily-sales').then(
+            (m) => m.BoDailySalesPage,
+          ),
+      },
+      {
+        path: 'analytics',
+        canActivate: [roleGuard('ADMIN')],
+        loadComponent: () =>
+          import('./features/backoffice/analytics/analytics-page').then(
+            (m) => m.BoAnalyticsPage,
+          ),
+      },
+      {
+        path: 'users',
+        canActivate: [roleGuard('ADMIN')],
+        loadComponent: () =>
+          import('./features/backoffice/users/user-list').then(
+            (m) => m.BoUserListPage,
+          ),
+      },
+      {
+        path: 'users/new/:role',
+        canActivate: [roleGuard('ADMIN')],
+        loadComponent: () =>
+          import('./features/backoffice/users/user-form').then(
+            (m) => m.BoUserFormPage,
+          ),
+      },
     ],
   },
   {

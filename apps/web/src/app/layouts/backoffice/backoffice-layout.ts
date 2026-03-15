@@ -59,6 +59,32 @@ import { AuthService } from '../../core/services/auth.service';
           >
             Brands
           </a>
+          <a
+            routerLink="/backoffice/reports/daily-sales"
+            routerLinkActive="bg-gray-700"
+            class="block px-3 py-2 rounded text-sm hover:bg-gray-700"
+          >
+            Daily Sales
+          </a>
+          @if (isAdmin()) {
+            <div class="pt-3 mt-3 border-t border-gray-700">
+              <span class="px-3 text-xs uppercase text-gray-500">Admin</span>
+            </div>
+            <a
+              routerLink="/backoffice/analytics"
+              routerLinkActive="bg-gray-700"
+              class="block px-3 py-2 rounded text-sm hover:bg-gray-700"
+            >
+              Analytics
+            </a>
+            <a
+              routerLink="/backoffice/users"
+              routerLinkActive="bg-gray-700"
+              class="block px-3 py-2 rounded text-sm hover:bg-gray-700"
+            >
+              Users
+            </a>
+          }
         </nav>
 
         <div class="p-4 border-t border-gray-700">
@@ -104,6 +130,10 @@ import { AuthService } from '../../core/services/auth.service';
 export class BackofficeLayout {
   protected readonly auth = inject(AuthService);
   protected readonly sidebarOpen = signal(false);
+
+  protected isAdmin(): boolean {
+    return this.auth.user()?.role === 'ADMIN';
+  }
 
   onLogout() {
     this.auth.logout().subscribe();
