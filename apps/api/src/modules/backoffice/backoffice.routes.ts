@@ -4,6 +4,8 @@ import { categoryAdminRouter } from './categories/category-admin.routes.js';
 import { brandAdminRouter } from './brands/brand-admin.routes.js';
 import { productAdminRouter } from './products/product-admin.routes.js';
 import { orderAdminRouter } from './orders/order-admin.routes.js';
+import { reportRouter } from './reports/report.routes.js';
+import { analyticsRouter } from './analytics/analytics.routes.js';
 
 export const backofficeRouter = Router();
 
@@ -14,3 +16,5 @@ backofficeRouter.use('/categories', categoryAdminRouter);
 backofficeRouter.use('/brands', brandAdminRouter);
 backofficeRouter.use('/products', productAdminRouter);
 backofficeRouter.use('/orders', orderAdminRouter);
+backofficeRouter.use('/reports', reportRouter);
+backofficeRouter.use('/analytics', analyticsRouter);
