@@ -52,6 +52,14 @@ import { CartService } from '../../core/services/cart.service';
                 >
                   Addresses
                 </a>
+                @if (isStaffOrAdmin()) {
+                  <a
+                    routerLink="/backoffice"
+                    class="text-sm font-medium text-indigo-600 hover:text-indigo-800"
+                  >
+                    Back Office
+                  </a>
+                }
                 <button
                   (click)="onLogout()"
                   class="text-sm text-red-600 hover:text-red-800 cursor-pointer"
@@ -91,6 +99,11 @@ export class StorefrontLayout implements OnInit {
     if (this.auth.isAuthenticated()) {
       this.cartService.loadCart().subscribe();
     }
+  }
+
+  protected isStaffOrAdmin(): boolean {
+    const role = this.auth.user()?.role;
+    return role === 'STAFF' || role === 'ADMIN';
   }
 
   onLogout() {

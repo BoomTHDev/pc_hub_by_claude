@@ -1,0 +1,226 @@
+import { Component, inject, signal, OnInit } from '@angular/core';
+import { RouterLink } from '@angular/router';
+import { FormsModule } from '@angular/forms';
+import { BackofficeCatalogService, type AdminProduct } from '../../../core/services/backoffice-catalog.service';
+import { AuthService } from '../../../core/services/auth.service';
+import { ThaiBahtPipe } from '../../../shared/pipes/thai-baht.pipe';
+import type { PaginationMeta } from '../../../shared/models/pagination.model';
+
+@Component({
+  selector: 'app-bo-product-list',
+  imports: [RouterLink, FormsModule, ThaiBahtPipe],
+  template: `
+    <div>
+      <div class="flex items-center justify-between mb-6">
+        <h1 class="text-2xl font-bold text-gray-900">Products</h1>
+        @if (isAdmin()) {
+          <a
+            routerLink="/backoffice/products/new"
+            class="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-500 text-sm"
+          >
+            Add Product
+          </a>
+        }
+      </div>
+
+      <!-- Filters -->
+      <div class="bg-white rounded-lg shadow p-4 mb-6">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <input
+            type="text"
+            [(ngModel)]="search"
+            (ngModelChange)="onFilterChange()"
+            placeholder="Search products..."
+            class="border border-gray-300 rounded px-3 py-2 text-sm"
+          />
+          <select
+            [(ngModel)]="activeFilter"
+            (ngModelChange)="onFilterChange()"
+            class="border border-gray-300 rounded px-3 py-2 text-sm"
+          >
+            <option value="">All Status</option>
+            <option value="true">Active</option>
+            <option value="false">Inactive</option>
+          </select>
+          <select
+            [(ngModel)]="sortField"
+            (ngModelChange)="onFilterChange()"
+            class="border border-gray-300 rounded px-3 py-2 text-sm"
+          >
+            <option value="">Default Sort</option>
+            <option value="name">Name</option>
+            <option value="price">Price</option>
+            <option value="stock">Stock</option>
+            <option value="createdAt">Date Created</option>
+          </select>
+        </div>
+      </div>
+
+      @if (loading()) {
+        <p class="text-gray-500">Loading products...</p>
+      } @else if (products().length === 0) {
+        <p class="text-gray-500">No products found.</p>
+      } @else {
+        <div class="bg-white rounded-lg shadow overflow-hidden">
+          <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+              <tr>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Image</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">SKU</th>
+                <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Price</th>
+                <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Stock</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200">
+              @for (product of products(); track product.id) {
+                <tr class="hover:bg-gray-50">
+                  <td class="px-4 py-3">
+                    @if (product.images.length > 0) {
+                      <img [src]="product.images[0].imageUrl" alt="" class="w-10 h-10 object-cover rounded" />
+                    } @else {
+                      <div class="w-10 h-10 bg-gray-200 rounded flex items-center justify-center text-xs text-gray-400">N/A</div>
+                    }
+                  </td>
+                  <td class="px-4 py-3 text-sm text-gray-700">
+                    <div>{{ product.name }}</div>
+                    <div class="text-xs text-gray-400">{{ product.category.name }} / {{ product.brand.name }}</div>
+                  </td>
+                  <td class="px-4 py-3 text-sm text-gray-500">{{ product.sku }}</td>
+                  <td class="px-4 py-3 text-sm text-right text-gray-700">{{ product.price | thaiBaht }}</td>
+                  <td class="px-4 py-3 text-sm text-right" [class]="product.stock <= 0 ? 'text-red-600 font-medium' : 'text-gray-700'">
+                    {{ product.stock }}
+                  </td>
+                  <td class="px-4 py-3">
+                    <button
+                      (click)="onToggleActive(product)"
+                      class="inline-flex px-2 py-0.5 text-xs font-medium rounded-full cursor-pointer"
+                      [class]="product.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'"
+                    >
+                      {{ product.isActive ? 'Active' : 'Inactive' }}
+                    </button>
+                  </td>
+                  <td class="px-4 py-3">
+                    <div class="flex gap-2">
+                      @if (isAdmin()) {
+                        <a
+                          [routerLink]="['/backoffice/products', product.id, 'edit']"
+                          class="text-sm text-indigo-600 hover:text-indigo-800"
+                        >
+                          Edit
+                        </a>
+                        <button
+                          (click)="onDelete(product)"
+                          class="text-sm text-red-600 hover:text-red-800 cursor-pointer"
+                        >
+                          Delete
+                        </button>
+                      }
+                    </div>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Pagination -->
+        @if (pagination()) {
+          <div class="flex items-center justify-between mt-4">
+            <p class="text-sm text-gray-600">
+              Showing page {{ pagination()!.page }} of {{ pagination()!.totalPages }}
+              ({{ pagination()!.total }} total)
+            </p>
+            <div class="flex gap-2">
+              <button
+                (click)="goToPage(pagination()!.page - 1)"
+                [disabled]="pagination()!.page <= 1"
+                class="px-3 py-1 text-sm border rounded disabled:opacity-50 cursor-pointer disabled:cursor-default"
+              >
+                Previous
+              </button>
+              <button
+                (click)="goToPage(pagination()!.page + 1)"
+                [disabled]="pagination()!.page >= pagination()!.totalPages"
+                class="px-3 py-1 text-sm border rounded disabled:opacity-50 cursor-pointer disabled:cursor-default"
+              >
+                Next
+              </button>
+            </div>
+          </div>
+        }
+      }
+    </div>
+  `,
+})
+export class BoProductListPage implements OnInit {
+  private readonly catalogService = inject(BackofficeCatalogService);
+  private readonly auth = inject(AuthService);
+
+  protected readonly products = signal<AdminProduct[]>([]);
+  protected readonly pagination = signal<PaginationMeta | null>(null);
+  protected readonly loading = signal(true);
+
+  protected search = '';
+  protected activeFilter = '';
+  protected sortField = '';
+  private currentPage = 1;
+
+  ngOnInit() {
+    this.loadProducts();
+  }
+
+  protected isAdmin(): boolean {
+    return this.auth.user()?.role === 'ADMIN';
+  }
+
+  onFilterChange() {
+    this.currentPage = 1;
+    this.loadProducts();
+  }
+
+  goToPage(page: number) {
+    this.currentPage = page;
+    this.loadProducts();
+  }
+
+  onToggleActive(product: AdminProduct) {
+    this.catalogService.toggleProductActive(product.id).subscribe({
+      next: (res) => {
+        const updated = this.products().map((p) =>
+          p.id === product.id ? { ...p, isActive: res.data.isActive } : p,
+        );
+        this.products.set(updated);
+      },
+    });
+  }
+
+  onDelete(product: AdminProduct) {
+    if (!confirm(`Delete "${product.name}"?`)) return;
+    this.catalogService.deleteProduct(product.id).subscribe({
+      next: () => this.loadProducts(),
+    });
+  }
+
+  private loadProducts() {
+    this.loading.set(true);
+    this.catalogService
+      .listProducts({
+        page: this.currentPage,
+        limit: 20,
+        search: this.search || undefined,
+        isActive: this.activeFilter ? this.activeFilter === 'true' : undefined,
+        sort: this.sortField || undefined,
+      })
+      .subscribe({
+        next: (res) => {
+          this.products.set(res.data);
+          this.pagination.set(res.pagination);
+          this.loading.set(false);
+        },
+        error: () => this.loading.set(false),
+      });
+  }
+}

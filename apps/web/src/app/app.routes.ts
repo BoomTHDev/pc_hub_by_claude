@@ -2,8 +2,109 @@ import { Routes } from '@angular/router';
 import { StorefrontLayout } from './layouts/storefront/storefront-layout';
 import { authGuard } from './core/guards/auth.guard';
 import { guestGuard } from './core/guards/guest.guard';
+import { roleGuard } from './core/guards/role.guard';
 
 export const routes: Routes = [
+  {
+    path: 'backoffice',
+    canActivate: [authGuard, roleGuard('STAFF', 'ADMIN')],
+    loadComponent: () =>
+      import('./layouts/backoffice/backoffice-layout').then(
+        (m) => m.BackofficeLayout,
+      ),
+    children: [
+      {
+        path: '',
+        loadComponent: () =>
+          import('./features/backoffice/dashboard/dashboard-page').then(
+            (m) => m.DashboardPage,
+          ),
+      },
+      {
+        path: 'orders',
+        loadComponent: () =>
+          import('./features/backoffice/orders/order-list').then(
+            (m) => m.BoOrderListPage,
+          ),
+      },
+      {
+        path: 'orders/:orderId',
+        loadComponent: () =>
+          import('./features/backoffice/orders/order-detail').then(
+            (m) => m.BoOrderDetailPage,
+          ),
+      },
+      {
+        path: 'products',
+        loadComponent: () =>
+          import('./features/backoffice/products/product-list').then(
+            (m) => m.BoProductListPage,
+          ),
+      },
+      {
+        path: 'products/new',
+        canActivate: [roleGuard('ADMIN')],
+        loadComponent: () =>
+          import('./features/backoffice/products/product-form').then(
+            (m) => m.BoProductFormPage,
+          ),
+      },
+      {
+        path: 'products/:productId/edit',
+        canActivate: [roleGuard('ADMIN')],
+        loadComponent: () =>
+          import('./features/backoffice/products/product-form').then(
+            (m) => m.BoProductFormPage,
+          ),
+      },
+      {
+        path: 'categories',
+        loadComponent: () =>
+          import('./features/backoffice/categories/category-list').then(
+            (m) => m.BoCategoryListPage,
+          ),
+      },
+      {
+        path: 'categories/new',
+        canActivate: [roleGuard('ADMIN')],
+        loadComponent: () =>
+          import('./features/backoffice/categories/category-form').then(
+            (m) => m.BoCategoryFormPage,
+          ),
+      },
+      {
+        path: 'categories/:categoryId/edit',
+        canActivate: [roleGuard('ADMIN')],
+        loadComponent: () =>
+          import('./features/backoffice/categories/category-form').then(
+            (m) => m.BoCategoryFormPage,
+          ),
+      },
+      {
+        path: 'brands',
+        loadComponent: () =>
+          import('./features/backoffice/brands/brand-list').then(
+            (m) => m.BoBrandListPage,
+          ),
+      },
+      {
+        path: 'brands/new',
+        canActivate: [roleGuard('ADMIN')],
+        loadComponent: () =>
+          import('./features/backoffice/brands/brand-form').then(
+            (m) => m.BoBrandFormPage,
+          ),
+      },
+      {
+        path: 'brands/:brandId/edit',
+        canActivate: [roleGuard('ADMIN')],
+        loadComponent: () =>
+          import('./features/backoffice/brands/brand-form').then(
+            (m) => m.BoBrandFormPage,
+          ),
+      },
+    ],
+  },
   {
     path: '',
     component: StorefrontLayout,
