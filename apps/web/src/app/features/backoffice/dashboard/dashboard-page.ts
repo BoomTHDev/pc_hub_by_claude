@@ -31,12 +31,6 @@ import { AuthService } from '../../../core/services/auth.service';
           >
             View Products
           </a>
-          <a
-            routerLink="/backoffice/reports/daily-sales"
-            class="inline-flex items-center px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-500 text-sm"
-          >
-            Daily Sales Report
-          </a>
         </div>
       </div>
     </div>
