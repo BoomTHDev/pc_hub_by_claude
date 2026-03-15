@@ -16,6 +16,7 @@ async function cleanAll() {
   await prisma.brand.deleteMany();
   await prisma.refreshToken.deleteMany();
   await prisma.address.deleteMany();
+  await prisma.auditLog.deleteMany();
   await prisma.user.deleteMany();
 }
 

@@ -15,6 +15,7 @@ const TEST_USER = {
 async function cleanDatabase() {
   await prisma.refreshToken.deleteMany();
   await prisma.address.deleteMany();
+  await prisma.auditLog.deleteMany();
   await prisma.user.deleteMany();
 }
 

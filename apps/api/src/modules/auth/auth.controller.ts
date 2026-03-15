@@ -3,6 +3,7 @@ import * as authService from './auth.service.js';
 import { registerBodySchema, loginBodySchema } from './auth.schema.js';
 import { sendSuccess } from '../../common/response.js';
 import { setRefreshCookie, clearRefreshCookie, getRefreshCookieName } from '../../utils/cookie.js';
+import { getAuthUser } from '../../middleware/auth.js';
 
 function getCookieValue(req: Request, name: string): string | undefined {
   const value: unknown = req.cookies?.[name];
@@ -81,7 +82,7 @@ export async function logout(req: Request, res: Response): Promise<void> {
 }
 
 export async function me(req: Request, res: Response): Promise<void> {
-  const user = await authService.me(req.user!.userId);
+  const user = await authService.me(getAuthUser(req).userId);
 
   sendSuccess({
     res,

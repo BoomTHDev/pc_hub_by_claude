@@ -7,6 +7,7 @@ import {
   deleteImage,
   ensureCloudinaryConfigured,
 } from '../../../config/cloudinary.js';
+import { logAction } from '../../audit/audit.service.js';
 import type {
   ProductAdminListQuery,
   CreateProductBody,
@@ -142,27 +143,37 @@ async function validateForeignKeys(
   }
 }
 
-export async function createProduct(body: CreateProductBody) {
+export async function createProduct(body: CreateProductBody, actorUserId: number) {
   await validateForeignKeys(body.categoryId, body.brandId);
 
   try {
-    const row = await prisma.product.create({
-      data: {
-        categoryId: body.categoryId,
-        brandId: body.brandId,
-        name: body.name,
-        slug: body.slug,
-        sku: body.sku,
-        description: body.description,
-        price: body.price,
-        stock: body.stock,
-        warrantyMonths: body.warrantyMonths,
-        isActive: body.isActive,
-      },
-      select: detailSelect,
-    });
+    return await prisma.$transaction(async (tx) => {
+      const row = await tx.product.create({
+        data: {
+          categoryId: body.categoryId,
+          brandId: body.brandId,
+          name: body.name,
+          slug: body.slug,
+          sku: body.sku,
+          description: body.description,
+          price: body.price,
+          stock: body.stock,
+          warrantyMonths: body.warrantyMonths,
+          isActive: body.isActive,
+        },
+        select: detailSelect,
+      });
 
-    return { ...row, price: Number(row.price) };
+      await logAction(tx, {
+        actorUserId,
+        action: 'PRODUCT_CREATE',
+        entityType: 'Product',
+        entityId: row.id,
+        metadata: { name: body.name, sku: body.sku },
+      });
+
+      return { ...row, price: Number(row.price) };
+    });
   } catch (error) {
     if (
       error instanceof Prisma.PrismaClientKnownRequestError &&
@@ -178,7 +189,7 @@ export async function createProduct(body: CreateProductBody) {
   }
 }
 
-export async function updateProduct(productId: number, body: UpdateProductBody) {
+export async function updateProduct(productId: number, body: UpdateProductBody, actorUserId: number) {
   const existing = await prisma.product.findUnique({
     where: { id: productId },
   });
@@ -189,13 +200,22 @@ export async function updateProduct(productId: number, body: UpdateProductBody) 
   await validateForeignKeys(body.categoryId, body.brandId);
 
   try {
-    const row = await prisma.product.update({
-      where: { id: productId },
-      data: body,
-      select: detailSelect,
-    });
+    return await prisma.$transaction(async (tx) => {
+      const row = await tx.product.update({
+        where: { id: productId },
+        data: body,
+        select: detailSelect,
+      });
 
-    return { ...row, price: Number(row.price) };
+      await logAction(tx, {
+        actorUserId,
+        action: 'PRODUCT_UPDATE',
+        entityType: 'Product',
+        entityId: productId,
+      });
+
+      return { ...row, price: Number(row.price) };
+    });
   } catch (error) {
     if (
       error instanceof Prisma.PrismaClientKnownRequestError &&
@@ -211,11 +231,12 @@ export async function updateProduct(productId: number, body: UpdateProductBody) 
   }
 }
 
-export async function deleteProduct(productId: number) {
+export async function deleteProduct(productId: number, actorUserId: number) {
   const existing = await prisma.product.findUnique({
     where: { id: productId },
     select: {
       id: true,
+      name: true,
       images: { select: { id: true, imagePublicId: true } },
     },
   });
@@ -228,13 +249,21 @@ export async function deleteProduct(productId: number) {
     await deleteImage(image.imagePublicId);
   }
 
-  await prisma.$transaction([
-    prisma.productImage.deleteMany({ where: { productId } }),
-    prisma.product.delete({ where: { id: productId } }),
-  ]);
+  await prisma.$transaction(async (tx) => {
+    await tx.productImage.deleteMany({ where: { productId } });
+    await tx.product.delete({ where: { id: productId } });
+
+    await logAction(tx, {
+      actorUserId,
+      action: 'PRODUCT_DELETE',
+      entityType: 'Product',
+      entityId: productId,
+      metadata: { name: existing.name },
+    });
+  });
 }
 
-export async function toggleActive(productId: number) {
+export async function toggleActive(productId: number, actorUserId: number) {
   const existing = await prisma.product.findUnique({
     where: { id: productId },
     select: { id: true, isActive: true },
@@ -243,10 +272,24 @@ export async function toggleActive(productId: number) {
     throw new NotFoundError('Product not found');
   }
 
-  return await prisma.product.update({
-    where: { id: productId },
-    data: { isActive: !existing.isActive },
-    select: { id: true, isActive: true },
+  const newActive = !existing.isActive;
+
+  return await prisma.$transaction(async (tx) => {
+    const updated = await tx.product.update({
+      where: { id: productId },
+      data: { isActive: newActive },
+      select: { id: true, isActive: true },
+    });
+
+    await logAction(tx, {
+      actorUserId,
+      action: 'PRODUCT_TOGGLE_ACTIVE',
+      entityType: 'Product',
+      entityId: productId,
+      metadata: { isActive: newActive },
+    });
+
+    return updated;
   });
 }
 
@@ -261,6 +304,7 @@ export async function uploadProductImage(
   productId: number,
   file: UploadedFile,
   body: ImageUploadBody,
+  actorUserId: number,
 ) {
   ensureCloudinaryConfigured();
 
@@ -276,25 +320,37 @@ export async function uploadProductImage(
     'pc-hub/products',
   );
 
-  return await prisma.productImage.create({
-    data: {
-      productId,
-      imageUrl,
-      imagePublicId,
-      altText: body.altText,
-      sortOrder: body.sortOrder,
-    },
-    select: {
-      id: true,
-      imageUrl: true,
-      imagePublicId: true,
-      altText: true,
-      sortOrder: true,
-    },
+  return await prisma.$transaction(async (tx) => {
+    const productImage = await tx.productImage.create({
+      data: {
+        productId,
+        imageUrl,
+        imagePublicId,
+        altText: body.altText,
+        sortOrder: body.sortOrder,
+      },
+      select: {
+        id: true,
+        imageUrl: true,
+        imagePublicId: true,
+        altText: true,
+        sortOrder: true,
+      },
+    });
+
+    await logAction(tx, {
+      actorUserId,
+      action: 'PRODUCT_IMAGE_UPLOAD',
+      entityType: 'ProductImage',
+      entityId: productImage.id,
+      metadata: { productId },
+    });
+
+    return productImage;
   });
 }
 
-export async function deleteProductImage(productId: number, imageId: number) {
+export async function deleteProductImage(productId: number, imageId: number, actorUserId: number) {
   ensureCloudinaryConfigured();
 
   const image = await prisma.productImage.findFirst({
@@ -305,5 +361,16 @@ export async function deleteProductImage(productId: number, imageId: number) {
   }
 
   await deleteImage(image.imagePublicId);
-  await prisma.productImage.delete({ where: { id: imageId } });
+
+  await prisma.$transaction(async (tx) => {
+    await tx.productImage.delete({ where: { id: imageId } });
+
+    await logAction(tx, {
+      actorUserId,
+      action: 'PRODUCT_IMAGE_DELETE',
+      entityType: 'ProductImage',
+      entityId: imageId,
+      metadata: { productId },
+    });
+  });
 }

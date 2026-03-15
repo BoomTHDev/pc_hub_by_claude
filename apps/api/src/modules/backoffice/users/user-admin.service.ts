@@ -3,6 +3,7 @@ import { Prisma } from '../../../generated/prisma/client.js';
 import { NotFoundError, ConflictError, AppError } from '../../../common/errors.js';
 import { buildPaginationMeta } from '../../../common/pagination.js';
 import { hashPassword } from '../../../utils/password.js';
+import { logAction } from '../../audit/audit.service.js';
 import type { UserListQuery, CreatePrivilegedUserBody, UpdateUserBody } from './user-admin.schema.js';
 import type { UserRole } from '../../../generated/prisma/client.js';
 
@@ -49,23 +50,33 @@ export async function listUsers(query: UserListQuery) {
   };
 }
 
-export async function createPrivilegedUser(body: CreatePrivilegedUserBody, role: 'STAFF' | 'ADMIN') {
+export async function createPrivilegedUser(body: CreatePrivilegedUserBody, role: 'STAFF' | 'ADMIN', actorUserId: number) {
   const passwordHash = await hashPassword(body.password);
 
   try {
-    const user = await prisma.user.create({
-      data: {
-        firstName: body.firstName,
-        lastName: body.lastName,
-        email: body.email,
-        phoneNumber: body.phoneNumber,
-        passwordHash,
-        role: role as UserRole,
-      },
-      select: selectFields,
-    });
+    return await prisma.$transaction(async (tx) => {
+      const user = await tx.user.create({
+        data: {
+          firstName: body.firstName,
+          lastName: body.lastName,
+          email: body.email,
+          phoneNumber: body.phoneNumber,
+          passwordHash,
+          role: role as UserRole,
+        },
+        select: selectFields,
+      });
 
-    return user;
+      await logAction(tx, {
+        actorUserId,
+        action: 'USER_CREATE',
+        entityType: 'User',
+        entityId: user.id,
+        metadata: { role, email: body.email },
+      });
+
+      return user;
+    });
   } catch (error) {
     if (
       error instanceof Prisma.PrismaClientKnownRequestError &&
@@ -77,7 +88,7 @@ export async function createPrivilegedUser(body: CreatePrivilegedUserBody, role:
   }
 }
 
-export async function updateUser(userId: number, body: UpdateUserBody) {
+export async function updateUser(userId: number, body: UpdateUserBody, actorUserId: number) {
   const existing = await prisma.user.findUnique({
     where: { id: userId },
     select: { id: true, role: true },
@@ -87,13 +98,22 @@ export async function updateUser(userId: number, body: UpdateUserBody) {
     throw new NotFoundError('User not found');
   }
 
-  const user = await prisma.user.update({
-    where: { id: userId },
-    data: body,
-    select: selectFields,
-  });
+  return await prisma.$transaction(async (tx) => {
+    const user = await tx.user.update({
+      where: { id: userId },
+      data: body,
+      select: selectFields,
+    });
 
-  return user;
+    await logAction(tx, {
+      actorUserId,
+      action: 'USER_UPDATE',
+      entityType: 'User',
+      entityId: userId,
+    });
+
+    return user;
+  });
 }
 
 export async function disableUser(userId: number, adminUserId: number) {
@@ -110,11 +130,20 @@ export async function disableUser(userId: number, adminUserId: number) {
     throw new NotFoundError('User not found');
   }
 
-  const user = await prisma.user.update({
-    where: { id: userId },
-    data: { isActive: false },
-    select: selectFields,
-  });
+  return await prisma.$transaction(async (tx) => {
+    const user = await tx.user.update({
+      where: { id: userId },
+      data: { isActive: false },
+      select: selectFields,
+    });
 
-  return user;
+    await logAction(tx, {
+      actorUserId: adminUserId,
+      action: 'USER_DISABLE',
+      entityType: 'User',
+      entityId: userId,
+    });
+
+    return user;
+  });
 }

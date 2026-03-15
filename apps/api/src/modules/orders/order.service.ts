@@ -3,6 +3,7 @@ import { AppError, NotFoundError } from '../../common/errors.js';
 import { buildPaginationMeta } from '../../common/pagination.js';
 import { env } from '../../config/env.js';
 import { ensureCloudinaryConfigured, uploadImage } from '../../config/cloudinary.js';
+import { logAction } from '../audit/audit.service.js';
 import type { OrderListQuery } from './order.schema.js';
 import type { OrderStatus, PaymentMethod } from '../../generated/prisma/client.js';
 import generatePayload from 'promptpay-qr';
@@ -508,13 +509,23 @@ export async function approveOrder(orderId: number, staffUserId: number) {
 
   // COD orders in PENDING -> move to PROCESSING
   if (order.paymentMethod === 'COD' && order.status === 'PENDING') {
-    await prisma.order.update({
-      where: { id: orderId },
-      data: {
-        status: 'PROCESSING',
-        approvedByUserId: staffUserId,
-        approvedAt: now,
-      },
+    await prisma.$transaction(async (tx) => {
+      await tx.order.update({
+        where: { id: orderId },
+        data: {
+          status: 'PROCESSING',
+          approvedByUserId: staffUserId,
+          approvedAt: now,
+        },
+      });
+
+      await logAction(tx, {
+        actorUserId: staffUserId,
+        action: 'ORDER_APPROVE',
+        entityType: 'Order',
+        entityId: orderId,
+        metadata: { fromStatus: order.status, toStatus: 'PROCESSING', paymentMethod: 'COD' },
+      });
     });
     return { status: 'PROCESSING' as const };
   }
@@ -541,6 +552,14 @@ export async function approveOrder(orderId: number, staffUserId: number) {
           },
         });
       }
+
+      await logAction(tx, {
+        actorUserId: staffUserId,
+        action: 'ORDER_APPROVE',
+        entityType: 'Order',
+        entityId: orderId,
+        metadata: { fromStatus: order.status, toStatus: 'APPROVED', paymentMethod: 'PROMPTPAY_QR' },
+      });
     });
     return { status: 'APPROVED' as const };
   }
@@ -602,12 +621,20 @@ export async function rejectOrder(orderId: number, staffUserId: number, reason: 
 
     // Restore stock
     await restoreStock(orderId, tx);
+
+    await logAction(tx, {
+      actorUserId: staffUserId,
+      action: 'ORDER_REJECT',
+      entityType: 'Order',
+      entityId: orderId,
+      metadata: { fromStatus: order.status, reason },
+    });
   });
 
   return { status: 'REJECTED' as const };
 }
 
-export async function advanceOrderStatus(orderId: number, newStatus: string) {
+export async function advanceOrderStatus(orderId: number, newStatus: string, staffUserId: number) {
   const order = await prisma.order.findUnique({
     where: { id: orderId },
     select: { id: true, status: true },
@@ -637,9 +664,19 @@ export async function advanceOrderStatus(orderId: number, newStatus: string) {
     );
   }
 
-  await prisma.order.update({
-    where: { id: orderId },
-    data: { status: newStatus as OrderStatus },
+  await prisma.$transaction(async (tx) => {
+    await tx.order.update({
+      where: { id: orderId },
+      data: { status: newStatus as OrderStatus },
+    });
+
+    await logAction(tx, {
+      actorUserId: staffUserId,
+      action: 'ORDER_ADVANCE_STATUS',
+      entityType: 'Order',
+      entityId: orderId,
+      metadata: { fromStatus: order.status, toStatus: newStatus },
+    });
   });
 
   return { status: newStatus };

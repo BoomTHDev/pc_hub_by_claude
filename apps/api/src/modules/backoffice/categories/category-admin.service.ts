@@ -2,6 +2,7 @@ import { prisma } from '../../../config/database.js';
 import { Prisma } from '../../../generated/prisma/client.js';
 import { NotFoundError, ConflictError } from '../../../common/errors.js';
 import { buildPaginationMeta } from '../../../common/pagination.js';
+import { logAction } from '../../audit/audit.service.js';
 import type {
   CategoryAdminListQuery,
   CreateCategoryBody,
@@ -43,7 +44,7 @@ export async function listCategories(query: CategoryAdminListQuery) {
   };
 }
 
-export async function createCategory(body: CreateCategoryBody) {
+export async function createCategory(body: CreateCategoryBody, actorUserId: number) {
   if (body.parentId !== undefined) {
     const parent = await prisma.category.findUnique({
       where: { id: body.parentId },
@@ -54,15 +55,27 @@ export async function createCategory(body: CreateCategoryBody) {
   }
 
   try {
-    return await prisma.category.create({
-      data: {
-        name: body.name,
-        slug: body.slug,
-        description: body.description,
-        parentId: body.parentId,
-        isActive: body.isActive,
-      },
-      select: selectFields,
+    return await prisma.$transaction(async (tx) => {
+      const category = await tx.category.create({
+        data: {
+          name: body.name,
+          slug: body.slug,
+          description: body.description,
+          parentId: body.parentId,
+          isActive: body.isActive,
+        },
+        select: selectFields,
+      });
+
+      await logAction(tx, {
+        actorUserId,
+        action: 'CATEGORY_CREATE',
+        entityType: 'Category',
+        entityId: category.id,
+        metadata: { name: body.name, slug: body.slug },
+      });
+
+      return category;
     });
   } catch (error) {
     if (
@@ -75,7 +88,7 @@ export async function createCategory(body: CreateCategoryBody) {
   }
 }
 
-export async function updateCategory(categoryId: number, body: UpdateCategoryBody) {
+export async function updateCategory(categoryId: number, body: UpdateCategoryBody, actorUserId: number) {
   const existing = await prisma.category.findUnique({
     where: { id: categoryId },
   });
@@ -96,10 +109,21 @@ export async function updateCategory(categoryId: number, body: UpdateCategoryBod
   }
 
   try {
-    return await prisma.category.update({
-      where: { id: categoryId },
-      data: body,
-      select: selectFields,
+    return await prisma.$transaction(async (tx) => {
+      const category = await tx.category.update({
+        where: { id: categoryId },
+        data: body,
+        select: selectFields,
+      });
+
+      await logAction(tx, {
+        actorUserId,
+        action: 'CATEGORY_UPDATE',
+        entityType: 'Category',
+        entityId: categoryId,
+      });
+
+      return category;
     });
   } catch (error) {
     if (
@@ -112,7 +136,7 @@ export async function updateCategory(categoryId: number, body: UpdateCategoryBod
   }
 }
 
-export async function deleteCategory(categoryId: number) {
+export async function deleteCategory(categoryId: number, actorUserId: number) {
   const existing = await prisma.category.findUnique({
     where: { id: categoryId },
   });
@@ -132,10 +156,20 @@ export async function deleteCategory(categoryId: number) {
     throw new ConflictError('Cannot delete category with child categories');
   }
 
-  await prisma.category.delete({ where: { id: categoryId } });
+  await prisma.$transaction(async (tx) => {
+    await tx.category.delete({ where: { id: categoryId } });
+
+    await logAction(tx, {
+      actorUserId,
+      action: 'CATEGORY_DELETE',
+      entityType: 'Category',
+      entityId: categoryId,
+      metadata: { name: existing.name },
+    });
+  });
 }
 
-export async function toggleActive(categoryId: number) {
+export async function toggleActive(categoryId: number, actorUserId: number) {
   const existing = await prisma.category.findUnique({
     where: { id: categoryId },
     select: { id: true, isActive: true },
@@ -144,11 +178,23 @@ export async function toggleActive(categoryId: number) {
     throw new NotFoundError('Category not found');
   }
 
-  const updated = await prisma.category.update({
-    where: { id: categoryId },
-    data: { isActive: !existing.isActive },
-    select: { id: true, isActive: true },
-  });
+  const newActive = !existing.isActive;
 
-  return updated;
+  return await prisma.$transaction(async (tx) => {
+    const updated = await tx.category.update({
+      where: { id: categoryId },
+      data: { isActive: newActive },
+      select: { id: true, isActive: true },
+    });
+
+    await logAction(tx, {
+      actorUserId,
+      action: 'CATEGORY_TOGGLE_ACTIVE',
+      entityType: 'Category',
+      entityId: categoryId,
+      metadata: { isActive: newActive },
+    });
+
+    return updated;
+  });
 }

@@ -2,6 +2,7 @@ import { prisma } from '../../../config/database.js';
 import { Prisma } from '../../../generated/prisma/client.js';
 import { NotFoundError, ConflictError } from '../../../common/errors.js';
 import { buildPaginationMeta } from '../../../common/pagination.js';
+import { logAction } from '../../audit/audit.service.js';
 import type {
   BrandAdminListQuery,
   CreateBrandBody,
@@ -43,15 +44,27 @@ export async function listBrands(query: BrandAdminListQuery) {
   };
 }
 
-export async function createBrand(body: CreateBrandBody) {
+export async function createBrand(body: CreateBrandBody, actorUserId: number) {
   try {
-    return await prisma.brand.create({
-      data: {
-        name: body.name,
-        slug: body.slug,
-        isActive: body.isActive,
-      },
-      select: selectFields,
+    return await prisma.$transaction(async (tx) => {
+      const brand = await tx.brand.create({
+        data: {
+          name: body.name,
+          slug: body.slug,
+          isActive: body.isActive,
+        },
+        select: selectFields,
+      });
+
+      await logAction(tx, {
+        actorUserId,
+        action: 'BRAND_CREATE',
+        entityType: 'Brand',
+        entityId: brand.id,
+        metadata: { name: body.name, slug: body.slug },
+      });
+
+      return brand;
     });
   } catch (error) {
     if (
@@ -64,7 +77,7 @@ export async function createBrand(body: CreateBrandBody) {
   }
 }
 
-export async function updateBrand(brandId: number, body: UpdateBrandBody) {
+export async function updateBrand(brandId: number, body: UpdateBrandBody, actorUserId: number) {
   const existing = await prisma.brand.findUnique({
     where: { id: brandId },
   });
@@ -73,10 +86,21 @@ export async function updateBrand(brandId: number, body: UpdateBrandBody) {
   }
 
   try {
-    return await prisma.brand.update({
-      where: { id: brandId },
-      data: body,
-      select: selectFields,
+    return await prisma.$transaction(async (tx) => {
+      const brand = await tx.brand.update({
+        where: { id: brandId },
+        data: body,
+        select: selectFields,
+      });
+
+      await logAction(tx, {
+        actorUserId,
+        action: 'BRAND_UPDATE',
+        entityType: 'Brand',
+        entityId: brandId,
+      });
+
+      return brand;
     });
   } catch (error) {
     if (
@@ -89,7 +113,7 @@ export async function updateBrand(brandId: number, body: UpdateBrandBody) {
   }
 }
 
-export async function deleteBrand(brandId: number) {
+export async function deleteBrand(brandId: number, actorUserId: number) {
   const existing = await prisma.brand.findUnique({
     where: { id: brandId },
   });
@@ -102,10 +126,20 @@ export async function deleteBrand(brandId: number) {
     throw new ConflictError('Cannot delete brand with existing products');
   }
 
-  await prisma.brand.delete({ where: { id: brandId } });
+  await prisma.$transaction(async (tx) => {
+    await tx.brand.delete({ where: { id: brandId } });
+
+    await logAction(tx, {
+      actorUserId,
+      action: 'BRAND_DELETE',
+      entityType: 'Brand',
+      entityId: brandId,
+      metadata: { name: existing.name },
+    });
+  });
 }
 
-export async function toggleActive(brandId: number) {
+export async function toggleActive(brandId: number, actorUserId: number) {
   const existing = await prisma.brand.findUnique({
     where: { id: brandId },
     select: { id: true, isActive: true },
@@ -114,9 +148,23 @@ export async function toggleActive(brandId: number) {
     throw new NotFoundError('Brand not found');
   }
 
-  return await prisma.brand.update({
-    where: { id: brandId },
-    data: { isActive: !existing.isActive },
-    select: { id: true, isActive: true },
+  const newActive = !existing.isActive;
+
+  return await prisma.$transaction(async (tx) => {
+    const updated = await tx.brand.update({
+      where: { id: brandId },
+      data: { isActive: newActive },
+      select: { id: true, isActive: true },
+    });
+
+    await logAction(tx, {
+      actorUserId,
+      action: 'BRAND_TOGGLE_ACTIVE',
+      entityType: 'Brand',
+      entityId: brandId,
+      metadata: { isActive: newActive },
+    });
+
+    return updated;
   });
 }

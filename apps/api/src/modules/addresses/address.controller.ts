@@ -6,19 +6,20 @@ import {
   addressIdParamSchema,
 } from './address.schema.js';
 import { sendSuccess } from '../../common/response.js';
+import { getAuthUser } from '../../middleware/auth.js';
 
 function parseAddressId(req: Request): number {
   return addressIdParamSchema.parse(req.params).addressId;
 }
 
 export async function list(req: Request, res: Response): Promise<void> {
-  const addresses = await addressService.listAddresses(req.user!.userId);
+  const addresses = await addressService.listAddresses(getAuthUser(req).userId);
   sendSuccess({ res, message: 'Addresses retrieved', data: addresses });
 }
 
 export async function create(req: Request, res: Response): Promise<void> {
   const body = createAddressBodySchema.parse(req.body);
-  const address = await addressService.createAddress(req.user!.userId, body);
+  const address = await addressService.createAddress(getAuthUser(req).userId, body);
   sendSuccess({
     res,
     message: 'Address created',
@@ -32,7 +33,7 @@ export async function update(req: Request, res: Response): Promise<void> {
   const body = updateAddressBodySchema.parse(req.body);
   const address = await addressService.updateAddress(
     addressId,
-    req.user!.userId,
+    getAuthUser(req).userId,
     body,
   );
   sendSuccess({ res, message: 'Address updated', data: address });
@@ -40,12 +41,12 @@ export async function update(req: Request, res: Response): Promise<void> {
 
 export async function remove(req: Request, res: Response): Promise<void> {
   const addressId = parseAddressId(req);
-  await addressService.deleteAddress(addressId, req.user!.userId);
+  await addressService.deleteAddress(addressId, getAuthUser(req).userId);
   sendSuccess({ res, message: 'Address deleted' });
 }
 
 export async function setDefault(req: Request, res: Response): Promise<void> {
   const addressId = parseAddressId(req);
-  const address = await addressService.setDefault(addressId, req.user!.userId);
+  const address = await addressService.setDefault(addressId, getAuthUser(req).userId);
   sendSuccess({ res, message: 'Default address set', data: address });
 }

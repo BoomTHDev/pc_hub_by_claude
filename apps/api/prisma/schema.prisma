@@ -59,6 +59,7 @@ model User {
   rejectedOrders  Order[] @relation("OrderRejectedBy")
   reviewedPayments Payment[] @relation("PaymentReviewedBy")
   uploadedSlips   PaymentSlip[] @relation("SlipUploadedBy")
+  auditLogs       AuditLog[] @relation("AuditActor")
 
   @@index([role])
   @@index([isActive])
@@ -289,4 +290,22 @@ model PaymentSlip {
 
   @@index([paymentId])
   @@index([uploadedByUserId])
+  @@index([uploadedAt])
+}
+
+model AuditLog {
+  id          Int      @id @default(autoincrement())
+  actorUserId Int
+  action      String   @db.VarChar(100)
+  entityType  String   @db.VarChar(50)
+  entityId    Int?
+  metadata    Json?
+  createdAt   DateTime @default(now())
+
+  actor User @relation("AuditActor", fields: [actorUserId], references: [id])
+
+  @@index([actorUserId])
+  @@index([entityType, entityId])
+  @@index([action])
+  @@index([createdAt])
 }
