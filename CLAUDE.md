@@ -104,3 +104,7 @@ A task is not done unless:
 - Prefer WebFetch over Bash network tools like curl or wget when fetching web documentation.
 - If the error is fully explained by local code and test output, fix it directly without unnecessary browsing.
 - If uncertainty remains after reading local context, browse before changing code.
+
+## Source of truth rule
+- When compacted session summaries conflict with the current repository state, treat the repository state and active docs as the source of truth.
+- Do not restart or re-plan completed phases if the codebase already contains the implementation.
