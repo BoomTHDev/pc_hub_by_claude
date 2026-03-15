@@ -46,6 +46,18 @@ import { ThaiBahtPipe } from '../../../shared/pipes/thai-baht.pipe';
 
       @if (loading()) {
         <p class="text-gray-500">Loading...</p>
+      } @else if (error()) {
+        <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+          <p class="text-sm text-red-700">{{ error() }}</p>
+          <button
+            (click)="onDateChange()"
+            class="mt-2 px-3 py-1 bg-red-600 text-white rounded text-sm hover:bg-red-500 cursor-pointer"
+          >
+            Retry
+          </button>
+        </div>
+      } @else if (!sales() || sales()!.totalOrders === 0) {
+        <p class="text-gray-500">No orders found for this date.</p>
       } @else if (sales()) {
         <!-- Summary cards -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
@@ -132,6 +144,7 @@ export class BoDailySalesPage implements OnInit {
   protected readonly sales = signal<DailySalesResult | null>(null);
   protected readonly loading = signal(true);
   protected readonly exporting = signal(false);
+  protected readonly error = signal('');
   protected selectedDate = '';
 
   ngOnInit() {
@@ -166,12 +179,16 @@ export class BoDailySalesPage implements OnInit {
 
   private loadSales() {
     this.loading.set(true);
+    this.error.set('');
     this.reportService.getDailySales(this.selectedDate || undefined).subscribe({
       next: (res) => {
         this.sales.set(res.data);
         this.loading.set(false);
       },
-      error: () => this.loading.set(false),
+      error: () => {
+        this.error.set('Failed to load daily sales data.');
+        this.loading.set(false);
+      },
     });
   }
 

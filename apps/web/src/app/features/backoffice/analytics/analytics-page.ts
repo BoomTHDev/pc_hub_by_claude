@@ -17,6 +17,16 @@ import { ThaiBahtPipe } from '../../../shared/pipes/thai-baht.pipe';
 
       @if (loading()) {
         <p class="text-gray-500">Loading...</p>
+      } @else if (summaryError()) {
+        <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+          <p class="text-sm text-red-700">{{ summaryError() }}</p>
+          <button
+            (click)="retrySummary()"
+            class="mt-2 px-3 py-1 bg-red-600 text-white rounded text-sm hover:bg-red-500 cursor-pointer"
+          >
+            Retry
+          </button>
+        </div>
       } @else if (summary()) {
         <!-- Summary cards -->
         <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-6">
@@ -71,6 +81,18 @@ import { ThaiBahtPipe } from '../../../shared/pipes/thai-baht.pipe';
           </div>
           @if (trendLoading()) {
             <p class="text-sm text-gray-400">Loading trend...</p>
+          } @else if (trendError()) {
+            <div class="text-sm">
+              <p class="text-red-600">{{ trendError() }}</p>
+              <button
+                (click)="onTrendPeriodChange()"
+                class="mt-1 text-indigo-600 hover:text-indigo-800 cursor-pointer"
+              >
+                Retry
+              </button>
+            </div>
+          } @else if (trendData().length === 0) {
+            <p class="text-sm text-gray-400">No revenue data for this period.</p>
           } @else {
             <div class="overflow-x-auto">
               <table class="min-w-full divide-y divide-gray-200">
@@ -111,6 +133,16 @@ import { ThaiBahtPipe } from '../../../shared/pipes/thai-baht.pipe';
           </div>
           @if (topLoading()) {
             <p class="text-sm text-gray-400">Loading...</p>
+          } @else if (topError()) {
+            <div class="text-sm">
+              <p class="text-red-600">{{ topError() }}</p>
+              <button
+                (click)="onTopLimitChange()"
+                class="mt-1 text-indigo-600 hover:text-indigo-800 cursor-pointer"
+              >
+                Retry
+              </button>
+            </div>
           } @else if (topProducts().length === 0) {
             <p class="text-sm text-gray-400">No product sales data.</p>
           } @else {
@@ -149,22 +181,38 @@ export class BoAnalyticsPage implements OnInit {
   protected readonly trendData = signal<RevenueTrendPoint[]>([]);
   protected readonly topProducts = signal<TopProduct[]>([]);
   protected readonly loading = signal(true);
+  protected readonly summaryError = signal('');
   protected readonly trendLoading = signal(false);
+  protected readonly trendError = signal('');
   protected readonly topLoading = signal(false);
+  protected readonly topError = signal('');
 
   protected trendPeriod: '7d' | '30d' | '90d' = '30d';
   protected topLimit = 10;
 
   ngOnInit() {
+    this.loadSummary();
+    this.loadTrend();
+    this.loadTopProducts();
+  }
+
+  protected retrySummary() {
+    this.summaryError.set('');
+    this.loadSummary();
+  }
+
+  private loadSummary() {
+    this.loading.set(true);
     this.analyticsService.getSummary().subscribe({
       next: (res) => {
         this.summary.set(res.data);
         this.loading.set(false);
       },
-      error: () => this.loading.set(false),
+      error: () => {
+        this.summaryError.set('Failed to load analytics summary.');
+        this.loading.set(false);
+      },
     });
-    this.loadTrend();
-    this.loadTopProducts();
   }
 
   onTrendPeriodChange() {
@@ -177,23 +225,31 @@ export class BoAnalyticsPage implements OnInit {
 
   private loadTrend() {
     this.trendLoading.set(true);
+    this.trendError.set('');
     this.analyticsService.getRevenueTrend(this.trendPeriod).subscribe({
       next: (res) => {
         this.trendData.set(res.data);
         this.trendLoading.set(false);
       },
-      error: () => this.trendLoading.set(false),
+      error: () => {
+        this.trendError.set('Failed to load revenue trend.');
+        this.trendLoading.set(false);
+      },
     });
   }
 
   private loadTopProducts() {
     this.topLoading.set(true);
+    this.topError.set('');
     this.analyticsService.getTopProducts(this.topLimit).subscribe({
       next: (res) => {
         this.topProducts.set(res.data);
         this.topLoading.set(false);
       },
-      error: () => this.topLoading.set(false),
+      error: () => {
+        this.topError.set('Failed to load top products.');
+        this.topLoading.set(false);
+      },
     });
   }
 }

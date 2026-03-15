@@ -24,6 +24,16 @@ import { ThaiBahtPipe } from '../../../shared/pipes/thai-baht.pipe';
 
       @if (loading()) {
         <p class="text-gray-500">Loading dashboard data...</p>
+      } @else if (error()) {
+        <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+          <p class="text-sm text-red-700">{{ error() }}</p>
+          <button
+            (click)="retry()"
+            class="mt-2 px-3 py-1 bg-red-600 text-white rounded text-sm hover:bg-red-500 cursor-pointer"
+          >
+            Retry
+          </button>
+        </div>
       } @else {
         <!-- Staff view: daily sales summary -->
         @if (isStaff() && dailySales()) {
@@ -116,9 +126,20 @@ export class DashboardPage implements OnInit {
   protected readonly dailySales = signal<DailySalesResult | null>(null);
   protected readonly analyticsSummary = signal<AnalyticsSummary | null>(null);
   protected readonly loading = signal(true);
+  protected readonly error = signal('');
 
   ngOnInit() {
+    this.loadData();
+  }
+
+  protected retry() {
+    this.error.set('');
+    this.loadData();
+  }
+
+  private loadData() {
     const role = this.auth.user()?.role;
+    this.loading.set(true);
 
     if (role === 'STAFF') {
       this.reportService.getDailySales().subscribe({
@@ -126,7 +147,10 @@ export class DashboardPage implements OnInit {
           this.dailySales.set(res.data);
           this.loading.set(false);
         },
-        error: () => this.loading.set(false),
+        error: () => {
+          this.error.set('Failed to load daily sales data.');
+          this.loading.set(false);
+        },
       });
     } else if (role === 'ADMIN') {
       this.analyticsService.getSummary().subscribe({
@@ -134,7 +158,10 @@ export class DashboardPage implements OnInit {
           this.analyticsSummary.set(res.data);
           this.loading.set(false);
         },
-        error: () => this.loading.set(false),
+        error: () => {
+          this.error.set('Failed to load analytics data.');
+          this.loading.set(false);
+        },
       });
     } else {
       this.loading.set(false);

@@ -53,6 +53,16 @@ import type { PaginationMeta } from '../../../shared/models/pagination.model';
 
       @if (loading()) {
         <p class="text-gray-500">Loading users...</p>
+      } @else if (error()) {
+        <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+          <p class="text-sm text-red-700">{{ error() }}</p>
+          <button
+            (click)="loadUsers()"
+            class="mt-2 px-3 py-1 bg-red-600 text-white rounded text-sm hover:bg-red-500 cursor-pointer"
+          >
+            Retry
+          </button>
+        </div>
       } @else if (users().length === 0) {
         <p class="text-gray-500">No users found.</p>
       } @else {
@@ -207,6 +217,7 @@ export class BoUserListPage implements OnInit {
   protected readonly users = signal<AdminUser[]>([]);
   protected readonly pagination = signal<PaginationMeta | null>(null);
   protected readonly loading = signal(true);
+  protected readonly error = signal('');
   protected readonly editingUserId = signal<number | null>(null);
   protected readonly editSaving = signal(false);
   protected readonly editError = signal('');
@@ -281,8 +292,9 @@ export class BoUserListPage implements OnInit {
     });
   }
 
-  private loadUsers() {
+  protected loadUsers() {
     this.loading.set(true);
+    this.error.set('');
     this.userService
       .listUsers({
         page: this.currentPage,
@@ -296,7 +308,10 @@ export class BoUserListPage implements OnInit {
           this.pagination.set(res.pagination);
           this.loading.set(false);
         },
-        error: () => this.loading.set(false),
+        error: () => {
+          this.error.set('Failed to load users.');
+          this.loading.set(false);
+        },
       });
   }
 }

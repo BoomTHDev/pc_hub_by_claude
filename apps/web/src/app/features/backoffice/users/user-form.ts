@@ -7,6 +7,9 @@ import { BackofficeUserService } from '../../../core/services/backoffice-user.se
   selector: 'app-bo-user-form',
   imports: [RouterLink, FormsModule],
   template: `
+    @if (!validRole()) {
+      <p class="text-gray-500">Redirecting...</p>
+    } @else {
     <div>
       <a routerLink="/backoffice/users" class="text-sm text-indigo-600 hover:text-indigo-800 mb-4 inline-block">
         &larr; Back to Users
@@ -85,6 +88,7 @@ import { BackofficeUserService } from '../../../core/services/backoffice-user.se
         </div>
       </div>
     </div>
+    }
   `,
 })
 export class BoUserFormPage implements OnInit {
@@ -95,6 +99,7 @@ export class BoUserFormPage implements OnInit {
   protected readonly saving = signal(false);
   protected readonly errorMsg = signal('');
   protected readonly roleLabel = signal('Staff');
+  protected readonly validRole = signal(false);
 
   private role: 'staff' | 'admin' = 'staff';
 
@@ -108,6 +113,11 @@ export class BoUserFormPage implements OnInit {
 
   ngOnInit() {
     const roleParam = this.route.snapshot.paramMap.get('role');
+    if (roleParam !== 'staff' && roleParam !== 'admin') {
+      this.router.navigate(['/backoffice/users']);
+      return;
+    }
+    this.validRole.set(true);
     if (roleParam === 'admin') {
       this.role = 'admin';
       this.roleLabel.set('Admin');
