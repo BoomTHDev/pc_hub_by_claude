@@ -58,4 +58,10 @@ if (!parsed.success) {
   process.exit(1);
 }
 
+// Fail fast if CORS_ORIGIN is wildcard in production
+if (parsed.data.NODE_ENV === 'production' && parsed.data.CORS_ORIGIN === '*') {
+  console.error('CORS_ORIGIN must not be "*" in production');
+  process.exit(1);
+}
+
 export const env = parsed.data;

@@ -1,30 +1,21 @@
 import { Router } from 'express';
-import type { RequestHandler } from 'express';
 import * as authController from './auth.controller.js';
 import { validate } from '../../middleware/validate.js';
 import { requireAuth, extractUser } from '../../middleware/auth.js';
 import { registerBodySchema, loginBodySchema } from './auth.schema.js';
-import { env } from '../../config/env.js';
-import rateLimit from 'express-rate-limit';
+import { createRateLimiter } from '../../config/rate-limit.js';
 
-function createAuthLimiter(): RequestHandler {
-  if (env.NODE_ENV === 'test') {
-    return (_req, _res, next) => next();
-  }
-  return rateLimit({
-    windowMs: 15 * 60 * 1000,
-    limit: 10,
-    standardHeaders: 'draft-7',
-    legacyHeaders: false,
-    message: {
-      success: false,
-      message: 'Too many attempts, please try again later',
-      code: 'RATE_LIMIT_EXCEEDED',
-    },
-  });
-}
+const authLimiter = createRateLimiter({
+  windowMs: 15 * 60 * 1000,
+  limit: 10,
+  message: 'Too many attempts, please try again later',
+});
 
-const authLimiter = createAuthLimiter();
+const refreshLimiter = createRateLimiter({
+  windowMs: 15 * 60 * 1000,
+  limit: 20,
+  message: 'Too many refresh attempts, please try again later',
+});
 
 export const authRouter = Router();
 
@@ -42,7 +33,7 @@ authRouter.post(
   authController.login,
 );
 
-authRouter.post('/refresh', authController.refresh);
+authRouter.post('/refresh', refreshLimiter, authController.refresh);
 
 authRouter.post('/logout', extractUser, authController.logout);
 
