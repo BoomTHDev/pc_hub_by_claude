@@ -91,3 +91,16 @@ A task is not done unless:
 - Prefer local service-level implementation before extracting shared abstractions.
 - Only extract a shared helper when duplication is already present in multiple places and the abstraction is clearly justified.
 - During implementation phases, keep scope tight and avoid architecture expansion unless explicitly requested.
+
+## Web research rules
+- Before answering questions that may depend on recent information, changing APIs, library behavior, framework docs, or external service behavior, use WebSearch first.
+- After finding likely relevant sources, use WebFetch to read the most relevant official documentation pages before making changes.
+- For errors, follow this order:
+  1. inspect the local error output, stack trace, failing test, and relevant source files
+  2. use WebSearch with the exact error message, framework/library name, and version if available
+  3. use WebFetch to read the most relevant official docs or trustworthy primary sources
+  4. then propose or apply the fix
+- Prefer official documentation and primary sources over blogs or forum posts.
+- Prefer WebFetch over Bash network tools like curl or wget when fetching web documentation.
+- If the error is fully explained by local code and test output, fix it directly without unnecessary browsing.
+- If uncertainty remains after reading local context, browse before changing code.

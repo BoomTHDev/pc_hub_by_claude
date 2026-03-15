@@ -11,11 +11,17 @@ export function errorHandler(
   _next: NextFunction,
 ): void {
   if (err instanceof AppError) {
-    res.status(err.statusCode).json({
+    const body: Record<string, unknown> = {
       success: false,
       message: err.message,
       code: err.code,
-    });
+    };
+
+    if ('invalidItems' in err) {
+      body['invalidItems'] = err.invalidItems;
+    }
+
+    res.status(err.statusCode).json(body);
     return;
   }
 

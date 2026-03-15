@@ -54,6 +54,28 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'cart',
+        canActivate: [authGuard],
+        loadComponent: () =>
+          import('./features/cart/cart-page').then((m) => m.CartPage),
+      },
+      {
+        path: 'checkout',
+        canActivate: [authGuard],
+        loadComponent: () =>
+          import('./features/checkout/checkout-page').then(
+            (m) => m.CheckoutPage,
+          ),
+      },
+      {
+        path: 'checkout/confirmation',
+        canActivate: [authGuard],
+        loadComponent: () =>
+          import('./features/checkout/order-confirmation').then(
+            (m) => m.OrderConfirmationPage,
+          ),
+      },
+      {
         path: 'account/addresses',
         canActivate: [authGuard],
         loadComponent: () =>

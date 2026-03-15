@@ -1,6 +1,7 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { RouterOutlet, RouterLink } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
+import { CartService } from '../../core/services/cart.service';
 
 @Component({
   selector: 'app-storefront-layout',
@@ -23,6 +24,19 @@ import { AuthService } from '../../core/services/auth.service';
 
             <div class="flex items-center gap-4">
               @if (auth.isAuthenticated()) {
+                <a
+                  routerLink="/cart"
+                  class="relative text-sm text-gray-600 hover:text-gray-900"
+                >
+                  Cart
+                  @if (cartService.itemCount() > 0) {
+                    <span
+                      class="absolute -top-2 -right-4 inline-flex items-center justify-center w-5 h-5 text-xs font-bold text-white bg-indigo-600 rounded-full"
+                    >
+                      {{ cartService.itemCount() }}
+                    </span>
+                  }
+                </a>
                 <span class="text-sm text-gray-600">
                   {{ auth.user()?.firstName }}
                 </span>
@@ -63,10 +77,19 @@ import { AuthService } from '../../core/services/auth.service';
     </div>
   `,
 })
-export class StorefrontLayout {
+export class StorefrontLayout implements OnInit {
   protected readonly auth = inject(AuthService);
+  protected readonly cartService = inject(CartService);
+
+  ngOnInit() {
+    if (this.auth.isAuthenticated()) {
+      this.cartService.loadCart().subscribe();
+    }
+  }
 
   onLogout() {
-    this.auth.logout().subscribe();
+    this.auth.logout().subscribe(() => {
+      this.cartService.clearLocalCart();
+    });
   }
 }

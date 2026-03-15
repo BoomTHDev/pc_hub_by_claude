@@ -1,7 +1,9 @@
 import { Component, inject, signal, OnInit } from '@angular/core';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 import { CatalogService } from '../../../core/services/catalog.service';
+import { CartService } from '../../../core/services/cart.service';
+import { AuthService } from '../../../core/services/auth.service';
 import { ThaiBahtPipe } from '../../../shared/pipes/thai-baht.pipe';
 import type { ProductDetail as ProductDetailModel } from '../../../shared/models/product.model';
 
@@ -111,18 +113,61 @@ import type { ProductDetail as ProductDetailModel } from '../../../shared/models
             }
 
             @if (p.warrantyMonths) {
-              <p class="text-sm text-gray-600 mb-6">
+              <p class="text-sm text-gray-600 mb-4">
                 Warranty: {{ p.warrantyMonths }} months
               </p>
             }
 
-            <!-- Add to cart placeholder -->
-            <button
-              disabled
-              class="w-full rounded-md bg-gray-300 px-4 py-3 text-sm font-semibold text-gray-500 cursor-not-allowed mb-6"
-            >
-              Add to Cart (Coming Soon)
-            </button>
+            <!-- Quantity selector -->
+            <div class="flex items-center gap-3 mb-4">
+              <span class="text-sm font-medium text-gray-700">Qty:</span>
+              <div class="flex items-center gap-2">
+                <button
+                  (click)="decrementQty()"
+                  [disabled]="quantity() <= 1"
+                  class="w-8 h-8 flex items-center justify-center rounded border border-gray-300 text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  −
+                </button>
+                <span class="w-8 text-center text-sm font-medium">{{ quantity() }}</span>
+                <button
+                  (click)="incrementQty(p.stock)"
+                  [disabled]="quantity() >= p.stock"
+                  class="w-8 h-8 flex items-center justify-center rounded border border-gray-300 text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  +
+                </button>
+              </div>
+            </div>
+
+            @if (cartMessage()) {
+              <p class="text-sm text-green-600 mb-3">{{ cartMessage() }}</p>
+            }
+            @if (cartError()) {
+              <p class="text-sm text-red-600 mb-3">{{ cartError() }}</p>
+            }
+
+            <!-- Action buttons -->
+            <div class="flex gap-3 mb-6">
+              <button
+                (click)="addToCart(p.id)"
+                [disabled]="p.stock === 0 || addingToCart()"
+                class="flex-1 rounded-md bg-indigo-600 px-4 py-3 text-sm font-semibold text-white hover:bg-indigo-500 disabled:bg-gray-300 disabled:cursor-not-allowed"
+              >
+                @if (addingToCart()) {
+                  Adding...
+                } @else {
+                  Add to Cart
+                }
+              </button>
+              <button
+                (click)="buyNow(p.id)"
+                [disabled]="p.stock === 0"
+                class="flex-1 rounded-md border border-indigo-600 px-4 py-3 text-sm font-semibold text-indigo-600 hover:bg-indigo-50 disabled:border-gray-300 disabled:text-gray-400 disabled:cursor-not-allowed"
+              >
+                Buy Now
+              </button>
+            </div>
 
             <!-- Description -->
             <div>
@@ -137,13 +182,20 @@ import type { ProductDetail as ProductDetailModel } from '../../../shared/models
 })
 export class ProductDetailPage implements OnInit {
   private readonly catalog = inject(CatalogService);
+  private readonly cartService = inject(CartService);
+  private readonly auth = inject(AuthService);
   private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
 
   readonly product = signal<ProductDetailModel | null>(null);
   readonly selectedImage = signal<string | null>(null);
   readonly loading = signal(true);
   readonly notFound = signal(false);
   readonly error = signal('');
+  readonly quantity = signal(1);
+  readonly addingToCart = signal(false);
+  readonly cartMessage = signal('');
+  readonly cartError = signal('');
 
   private slug = '';
 
@@ -177,5 +229,58 @@ export class ProductDetailPage implements OnInit {
 
   selectImage(url: string) {
     this.selectedImage.set(url);
+  }
+
+  incrementQty(maxStock: number) {
+    if (this.quantity() < maxStock) {
+      this.quantity.update((q) => q + 1);
+    }
+  }
+
+  decrementQty() {
+    if (this.quantity() > 1) {
+      this.quantity.update((q) => q - 1);
+    }
+  }
+
+  addToCart(productId: number) {
+    if (!this.auth.isAuthenticated()) {
+      this.router.navigate(['/login']);
+      return;
+    }
+
+    this.addingToCart.set(true);
+    this.cartMessage.set('');
+    this.cartError.set('');
+
+    this.cartService.addItem(productId, this.quantity()).subscribe({
+      next: () => {
+        this.addingToCart.set(false);
+        this.cartMessage.set('Added to cart!');
+        setTimeout(() => this.cartMessage.set(''), 3000);
+      },
+      error: (err: HttpErrorResponse) => {
+        this.addingToCart.set(false);
+        const body = err.error as Record<string, unknown>;
+        this.cartError.set(
+          typeof body['message'] === 'string' ? body['message'] : 'Failed to add to cart.',
+        );
+      },
+    });
+  }
+
+  buyNow(productId: number) {
+    if (!this.auth.isAuthenticated()) {
+      this.router.navigate(['/login']);
+      return;
+    }
+
+    this.router.navigate(['/checkout'], {
+      queryParams: {
+        mode: 'buy-now',
+        productId,
+        quantity: this.quantity(),
+      },
+    });
   }
 }

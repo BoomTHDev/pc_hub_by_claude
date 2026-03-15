@@ -45,4 +45,10 @@ export class CatalogService {
       `${this.apiUrl}/products/slug/${slug}`,
     );
   }
+
+  getProductById(id: number) {
+    return this.http.get<ApiResponse<ProductDetail>>(
+      `${this.apiUrl}/products/${id}`,
+    );
+  }
 }
