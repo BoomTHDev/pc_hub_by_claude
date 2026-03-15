@@ -41,6 +41,8 @@ let categoryId: number;
 let brandId: number;
 
 async function cleanDatabase() {
+  await prisma.paymentSlip.deleteMany();
+  await prisma.payment.deleteMany();
   await prisma.cartItem.deleteMany();
   await prisma.cart.deleteMany();
   await prisma.orderItem.deleteMany();
@@ -129,6 +131,8 @@ describe('POST /api/v1/checkout/cart', () => {
   beforeEach(async () => {
     await prisma.cartItem.deleteMany();
     await prisma.cart.deleteMany();
+    await prisma.paymentSlip.deleteMany();
+    await prisma.payment.deleteMany();
     await prisma.orderItem.deleteMany();
     await prisma.order.deleteMany();
     // Restore stock
@@ -317,6 +321,8 @@ describe('POST /api/v1/checkout/cart', () => {
 
 describe('POST /api/v1/checkout/buy-now', () => {
   beforeEach(async () => {
+    await prisma.paymentSlip.deleteMany();
+    await prisma.payment.deleteMany();
     await prisma.orderItem.deleteMany();
     await prisma.order.deleteMany();
     await prisma.product.update({ where: { id: productId }, data: { stock: 5, isActive: true } });
@@ -423,6 +429,8 @@ describe('GET /api/v1/checkout/confirmation/:orderNumber', () => {
   beforeEach(async () => {
     await prisma.cartItem.deleteMany();
     await prisma.cart.deleteMany();
+    await prisma.paymentSlip.deleteMany();
+    await prisma.payment.deleteMany();
     await prisma.orderItem.deleteMany();
     await prisma.order.deleteMany();
     await prisma.product.update({ where: { id: productId }, data: { stock: 5 } });

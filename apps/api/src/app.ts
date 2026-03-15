@@ -16,6 +16,7 @@ import { productRouter } from './modules/products/product.routes.js';
 import { backofficeRouter } from './modules/backoffice/backoffice.routes.js';
 import { cartRouter } from './modules/cart/cart.routes.js';
 import { checkoutRouter } from './modules/checkout/checkout.routes.js';
+import { orderRouter } from './modules/orders/order.routes.js';
 
 const app = express();
 
@@ -66,6 +67,7 @@ app.use('/api/v1/products', productRouter);
 app.use('/api/v1/backoffice', backofficeRouter);
 app.use('/api/v1/cart', cartRouter);
 app.use('/api/v1/checkout', checkoutRouter);
+app.use('/api/v1/account/orders', orderRouter);
 
 // 404 handler
 app.use(notFoundHandler);

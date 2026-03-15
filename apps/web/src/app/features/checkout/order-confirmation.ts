@@ -67,16 +67,27 @@ import type { OrderConfirmation } from '../../shared/models/cart.model';
             <div class="mt-4 p-3 bg-blue-50 rounded-lg">
               <p class="text-sm text-blue-700">
                 Please complete your PromptPay payment and upload the payment slip.
-                Payment slip upload will be available soon.
               </p>
+              <a
+                [routerLink]="['/account/orders', o.id]"
+                class="inline-block mt-2 text-sm font-medium text-blue-700 hover:text-blue-600 underline"
+              >
+                Complete Payment &rarr;
+              </a>
             </div>
           }
         </div>
 
-        <div class="mt-8 text-center">
+        <div class="mt-8 flex justify-center gap-4">
+          <a
+            [routerLink]="['/account/orders', o.id]"
+            class="inline-block rounded-md bg-indigo-600 px-6 py-2 text-sm font-semibold text-white hover:bg-indigo-500"
+          >
+            View Order
+          </a>
           <a
             routerLink="/products"
-            class="inline-block rounded-md bg-indigo-600 px-6 py-2 text-sm font-semibold text-white hover:bg-indigo-500"
+            class="inline-block rounded-md border border-gray-300 px-6 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50"
           >
             Continue Shopping
           </a>

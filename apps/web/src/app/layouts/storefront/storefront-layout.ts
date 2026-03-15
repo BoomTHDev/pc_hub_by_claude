@@ -41,6 +41,12 @@ import { CartService } from '../../core/services/cart.service';
                   {{ auth.user()?.firstName }}
                 </span>
                 <a
+                  routerLink="/account/orders"
+                  class="text-sm text-gray-600 hover:text-gray-900"
+                >
+                  Orders
+                </a>
+                <a
                   routerLink="/account/addresses"
                   class="text-sm text-gray-600 hover:text-gray-900"
                 >

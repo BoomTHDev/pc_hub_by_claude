@@ -217,6 +217,16 @@ export async function checkoutFromCart(userId: number, body: CartCheckoutBody) {
       },
     });
 
+    // Create payment record
+    await tx.payment.create({
+      data: {
+        orderId: createdOrder.id,
+        paymentMethod: body.paymentMethod,
+        status: 'UNPAID',
+        amount: totalAmount,
+      },
+    });
+
     // Clear cart
     await tx.cartItem.deleteMany({ where: { cartId: cart.id } });
 
@@ -312,7 +322,7 @@ export async function buyNowCheckout(userId: number, body: BuyNowCheckoutBody) {
     }
 
     // Create order
-    return tx.order.create({
+    const createdOrder = await tx.order.create({
       data: {
         userId,
         orderNumber,
@@ -346,6 +356,18 @@ export async function buyNowCheckout(userId: number, body: BuyNowCheckoutBody) {
         createdAt: true,
       },
     });
+
+    // Create payment record
+    await tx.payment.create({
+      data: {
+        orderId: createdOrder.id,
+        paymentMethod: body.paymentMethod,
+        status: 'UNPAID',
+        amount: totalAmount,
+      },
+    });
+
+    return createdOrder;
   });
 
   return {

@@ -28,6 +28,8 @@ let categoryId: number;
 let brandId: number;
 
 async function cleanDatabase() {
+  await prisma.paymentSlip.deleteMany();
+  await prisma.payment.deleteMany();
   await prisma.cartItem.deleteMany();
   await prisma.cart.deleteMany();
   await prisma.orderItem.deleteMany();

@@ -76,6 +76,22 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'account/orders',
+        canActivate: [authGuard],
+        loadComponent: () =>
+          import('./features/orders/order-history').then(
+            (m) => m.OrderHistoryPage,
+          ),
+      },
+      {
+        path: 'account/orders/:orderId',
+        canActivate: [authGuard],
+        loadComponent: () =>
+          import('./features/orders/order-detail').then(
+            (m) => m.OrderDetailPage,
+          ),
+      },
+      {
         path: 'account/addresses',
         canActivate: [authGuard],
         loadComponent: () =>
