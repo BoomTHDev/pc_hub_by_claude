@@ -1,14 +1,9 @@
 import { Component } from '@angular/core';
+import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-home',
-  template: `
-    <div class="max-w-7xl mx-auto px-4 py-12 text-center">
-      <h1 class="text-4xl font-bold text-gray-900">Welcome to PC Hub</h1>
-      <p class="mt-4 text-lg text-gray-600">
-        Your one-stop shop for computer hardware
-      </p>
-    </div>
-  `,
+  imports: [RouterLink],
+  templateUrl: './home.html',
 })
 export class Home {}

@@ -1,10 +1,13 @@
 import { Component, inject, signal, OnInit, OnDestroy } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { Subject, debounceTime, distinctUntilChanged, takeUntil } from 'rxjs';
 import { CatalogService } from '../../../core/services/catalog.service';
 import { ProductCard } from '../../../shared/components/product-card/product-card';
 import { Pagination } from '../../../shared/components/pagination/pagination';
+import { LoadingSkeleton } from '../../../shared/components/loading-skeleton/loading-skeleton';
+import { EmptyState } from '../../../shared/components/empty-state/empty-state';
+import { AlertBanner } from '../../../shared/components/alert-banner/alert-banner';
 import type { ProductSummary, ProductFilters } from '../../../shared/models/product.model';
 import type { CategorySummary } from '../../../shared/models/category.model';
 import type { BrandSummary } from '../../../shared/models/brand.model';
@@ -40,153 +43,8 @@ function parseFilters(
 
 @Component({
   selector: 'app-product-list',
-  imports: [FormsModule, ProductCard, Pagination],
-  template: `
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <h1 class="text-2xl font-bold text-gray-900 mb-6">{{ pageTitle() }}</h1>
-
-      <!-- Filters -->
-      <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4">
-          <!-- Search -->
-          <div class="lg:col-span-2">
-            <input
-              type="text"
-              placeholder="Search products..."
-              [ngModel]="searchInput()"
-              (ngModelChange)="onSearchInput($event)"
-              class="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            />
-          </div>
-
-          <!-- Category -->
-          @if (!presetCategoryId()) {
-            <select
-              [ngModel]="filters().categoryId ?? ''"
-              (ngModelChange)="onCategoryChange($event)"
-              class="rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            >
-              <option value="">All Categories</option>
-              @for (cat of categories(); track cat.id) {
-                <option [value]="cat.id">{{ cat.name }}</option>
-              }
-            </select>
-          }
-
-          <!-- Brand -->
-          @if (!presetBrandId()) {
-            <select
-              [ngModel]="filters().brandId ?? ''"
-              (ngModelChange)="onBrandChange($event)"
-              class="rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            >
-              <option value="">All Brands</option>
-              @for (brand of brands(); track brand.id) {
-                <option [value]="brand.id">{{ brand.name }}</option>
-              }
-            </select>
-          }
-
-          <!-- Price Range -->
-          <input
-            type="number"
-            placeholder="Min Price"
-            [ngModel]="filters().minPrice"
-            (ngModelChange)="onFilterChange('minPrice', $event)"
-            min="0"
-            class="rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-          />
-
-          <input
-            type="number"
-            placeholder="Max Price"
-            [ngModel]="filters().maxPrice"
-            (ngModelChange)="onFilterChange('maxPrice', $event)"
-            min="0"
-            class="rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-          />
-        </div>
-
-        <div class="flex items-center justify-between mt-4">
-          <!-- Sort -->
-          <select
-            [ngModel]="filters().sort"
-            (ngModelChange)="onFilterChange('sort', $event)"
-            class="rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-          >
-            <option value="newest">Newest</option>
-            <option value="oldest">Oldest</option>
-            <option value="price_asc">Price: Low to High</option>
-            <option value="price_desc">Price: High to Low</option>
-            <option value="name_asc">Name: A-Z</option>
-            <option value="name_desc">Name: Z-A</option>
-          </select>
-
-          <button
-            (click)="onClearFilters()"
-            class="text-sm text-indigo-600 hover:text-indigo-500"
-          >
-            Clear filters
-          </button>
-        </div>
-      </div>
-
-      <!-- Content -->
-      @if (loading()) {
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          @for (_ of skeletons; track $index) {
-            <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden animate-pulse">
-              <div class="aspect-square bg-gray-200"></div>
-              <div class="p-4 space-y-2">
-                <div class="h-3 bg-gray-200 rounded w-1/3"></div>
-                <div class="h-4 bg-gray-200 rounded w-2/3"></div>
-                <div class="h-5 bg-gray-200 rounded w-1/2 mt-2"></div>
-              </div>
-            </div>
-          }
-        </div>
-      } @else if (error()) {
-        <div class="text-center py-12 bg-white rounded-lg shadow-sm">
-          <p class="text-red-600 mb-4">{{ error() }}</p>
-          <button
-            (click)="loadProducts()"
-            class="text-indigo-600 hover:text-indigo-500 font-medium"
-          >
-            Retry
-          </button>
-        </div>
-      } @else if (notFound()) {
-        <div class="text-center py-12 bg-white rounded-lg shadow-sm">
-          <p class="text-gray-500 text-lg mb-4">{{ notFound() }}</p>
-          <a href="/products" class="text-indigo-600 hover:text-indigo-500 font-medium">
-            Browse all products
-          </a>
-        </div>
-      } @else if (products().length === 0) {
-        <div class="text-center py-12 bg-white rounded-lg shadow-sm">
-          <p class="text-gray-500 text-lg mb-4">No products found</p>
-          <button
-            (click)="onClearFilters()"
-            class="text-indigo-600 hover:text-indigo-500 font-medium"
-          >
-            Clear filters
-          </button>
-        </div>
-      } @else {
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          @for (product of products(); track product.id) {
-            <app-product-card [product]="product" />
-          }
-        </div>
-
-        <app-pagination
-          [page]="pagination().page"
-          [totalPages]="pagination().totalPages"
-          (pageChange)="onPageChange($event)"
-        />
-      }
-    </div>
-  `,
+  imports: [FormsModule, RouterLink, ProductCard, Pagination, LoadingSkeleton, EmptyState, AlertBanner],
+  templateUrl: './product-list.html',
 })
 export class ProductList implements OnInit, OnDestroy {
   private readonly catalog = inject(CatalogService);

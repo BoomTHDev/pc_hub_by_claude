@@ -1,0 +1,70 @@
+<!-- Hero -->
+<section class="bg-slate-900 text-white">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24">
+    <div class="max-w-2xl">
+      <h1 class="text-4xl sm:text-5xl font-bold tracking-tight">
+        Build Your
+        <span class="text-indigo-400">Dream PC</span>
+      </h1>
+      <p class="mt-4 text-lg text-slate-300 leading-relaxed">
+        Your one-stop shop for computer hardware. Quality components, competitive prices, and reliable service.
+      </p>
+      <div class="mt-8 flex flex-wrap gap-4">
+        <a
+          routerLink="/products"
+          class="rounded-lg bg-indigo-600 px-6 py-3 text-sm font-semibold text-white hover:bg-indigo-500 shadow-lg shadow-indigo-600/25"
+        >
+          Browse Products
+        </a>
+        <a
+          routerLink="/products"
+          [queryParams]="{ sort: 'newest' }"
+          class="rounded-lg border border-slate-600 px-6 py-3 text-sm font-semibold text-slate-300 hover:bg-slate-800 hover:text-white"
+        >
+          New Arrivals
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Value propositions -->
+<section class="bg-white border-b border-slate-200">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-8">
+      <div class="flex items-start gap-4">
+        <div class="flex items-center justify-center w-10 h-10 rounded-lg bg-indigo-50 text-indigo-600 shrink-0">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 18.75a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 0 1-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0H21M3.375 14.25h.008v.008h-.008V14.25Zm0 0V3.375c0-.621.504-1.125 1.125-1.125h11.25c.621 0 1.125.504 1.125 1.125v7.688M17.25 14.25h3.375c.621 0 1.125-.504 1.125-1.125v-2.25c0-.621-.504-1.125-1.125-1.125h-.871M17.25 14.25 15 9.75m0 0-.621-1.555A1.125 1.125 0 0 0 13.331 7.5H10.5" />
+          </svg>
+        </div>
+        <div>
+          <h3 class="text-sm font-semibold text-slate-900">Free Shipping</h3>
+          <p class="mt-1 text-sm text-slate-500">On all orders, delivered to your door</p>
+        </div>
+      </div>
+      <div class="flex items-start gap-4">
+        <div class="flex items-center justify-center w-10 h-10 rounded-lg bg-indigo-50 text-indigo-600 shrink-0">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75m-3-7.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285Z" />
+          </svg>
+        </div>
+        <div>
+          <h3 class="text-sm font-semibold text-slate-900">Warranty Included</h3>
+          <p class="mt-1 text-sm text-slate-500">Manufacturer warranty on all products</p>
+        </div>
+      </div>
+      <div class="flex items-start gap-4">
+        <div class="flex items-center justify-center w-10 h-10 rounded-lg bg-indigo-50 text-indigo-600 shrink-0">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 5.25h.008v.008H12v-.008Z" />
+          </svg>
+        </div>
+        <div>
+          <h3 class="text-sm font-semibold text-slate-900">Expert Support</h3>
+          <p class="mt-1 text-sm text-slate-500">Knowledgeable team ready to help</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
