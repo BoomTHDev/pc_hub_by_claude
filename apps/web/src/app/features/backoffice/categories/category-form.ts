@@ -58,7 +58,7 @@ export class BoCategoryFormPage implements OnInit {
       name: this.form.name,
       slug: this.form.slug,
       description: this.form.description || undefined,
-      parentId: this.form.parentId ?? undefined,
+      parentId: this.isEdit() ? this.form.parentId : (this.form.parentId ?? undefined),
     };
 
     const request = this.isEdit()
