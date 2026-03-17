@@ -69,8 +69,9 @@ export class BoProductFormPage implements OnInit {
       warrantyMonths: this.form.warrantyMonths || null,
     };
 
-    const request = this.isEdit()
-      ? this.catalogService.updateProduct(this.product()!.id, body)
+    const currentProduct = this.product();
+    const request = this.isEdit() && currentProduct
+      ? this.catalogService.updateProduct(currentProduct.id, body)
       : this.catalogService.createProduct(body);
 
     request.subscribe({
@@ -85,16 +86,18 @@ export class BoProductFormPage implements OnInit {
   }
 
   onFileSelected(event: Event) {
-    const input = event.target as HTMLInputElement;
-    const file = input.files?.[0];
-    if (!file || !this.product()) return;
+    const target = event.target;
+    if (!(target instanceof HTMLInputElement)) return;
+    const file = target.files?.[0];
+    const currentProduct = this.product();
+    if (!file || !currentProduct) return;
 
     this.uploading.set(true);
-    this.catalogService.uploadProductImage(this.product()!.id, file).subscribe({
+    this.catalogService.uploadProductImage(currentProduct.id, file).subscribe({
       next: () => {
         this.uploading.set(false);
-        this.loadProduct(this.product()!.id);
-        input.value = '';
+        this.loadProduct(currentProduct.id);
+        target.value = '';
       },
       error: () => {
         this.uploading.set(false);
@@ -108,11 +111,13 @@ export class BoProductFormPage implements OnInit {
   }
 
   onDeleteImageConfirmed() {
-    if (!this.pendingDeleteImageId || !this.product()) return;
-    this.catalogService.deleteProductImage(this.product()!.id, this.pendingDeleteImageId).subscribe({
+    const currentProduct = this.product();
+    const imageId = this.pendingDeleteImageId;
+    if (!imageId || !currentProduct) return;
+    this.catalogService.deleteProductImage(currentProduct.id, imageId).subscribe({
       next: () => {
         this.pendingDeleteImageId = null;
-        this.loadProduct(this.product()!.id);
+        this.loadProduct(currentProduct.id);
       },
     });
   }

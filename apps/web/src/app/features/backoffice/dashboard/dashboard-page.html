@@ -14,45 +14,45 @@
     </app-alert-banner>
   } @else {
     <!-- Staff view: daily sales summary -->
-    @if (isStaff() && dailySales()) {
+    @if (isStaff() && dailySales(); as ds) {
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
           <p class="text-sm text-slate-500">Today's Orders</p>
-          <p class="text-2xl font-bold text-slate-900 mt-1">{{ dailySales()!.totalOrders }}</p>
+          <p class="text-2xl font-bold text-slate-900 mt-1">{{ ds.totalOrders }}</p>
         </div>
         <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
           <p class="text-sm text-slate-500">Completed Revenue</p>
-          <p class="text-2xl font-bold text-green-700 mt-1">{{ dailySales()!.completedRevenue | thaiBaht }}</p>
+          <p class="text-2xl font-bold text-green-700 mt-1">{{ ds.completedRevenue | thaiBaht }}</p>
         </div>
         <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
           <p class="text-sm text-slate-500">Pending Revenue</p>
-          <p class="text-2xl font-bold text-amber-600 mt-1">{{ dailySales()!.pendingRevenue | thaiBaht }}</p>
+          <p class="text-2xl font-bold text-amber-600 mt-1">{{ ds.pendingRevenue | thaiBaht }}</p>
         </div>
       </div>
     }
 
     <!-- Admin view: analytics summary -->
-    @if (isAdmin() && analyticsSummary()) {
+    @if (isAdmin() && analyticsSummary(); as as_) {
       <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-6">
         <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
           <p class="text-xs text-slate-500">Total Revenue</p>
-          <p class="text-lg font-bold text-green-700 mt-1">{{ analyticsSummary()!.totalRevenue | thaiBaht }}</p>
+          <p class="text-lg font-bold text-green-700 mt-1">{{ as_.totalRevenue | thaiBaht }}</p>
         </div>
         <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
           <p class="text-xs text-slate-500">Total Orders</p>
-          <p class="text-lg font-bold text-slate-900 mt-1">{{ analyticsSummary()!.totalOrders }}</p>
+          <p class="text-lg font-bold text-slate-900 mt-1">{{ as_.totalOrders }}</p>
         </div>
         <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
           <p class="text-xs text-slate-500">Pending Review</p>
-          <p class="text-lg font-bold text-amber-600 mt-1">{{ analyticsSummary()!.pendingReviewCount }}</p>
+          <p class="text-lg font-bold text-amber-600 mt-1">{{ as_.pendingReviewCount }}</p>
         </div>
         <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
           <p class="text-xs text-slate-500">Customers</p>
-          <p class="text-lg font-bold text-slate-900 mt-1">{{ analyticsSummary()!.totalCustomers }}</p>
+          <p class="text-lg font-bold text-slate-900 mt-1">{{ as_.totalCustomers }}</p>
         </div>
         <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
           <p class="text-xs text-slate-500">Active Products</p>
-          <p class="text-lg font-bold text-slate-900 mt-1">{{ analyticsSummary()!.totalProducts }}</p>
+          <p class="text-lg font-bold text-slate-900 mt-1">{{ as_.totalProducts }}</p>
         </div>
       </div>
     }

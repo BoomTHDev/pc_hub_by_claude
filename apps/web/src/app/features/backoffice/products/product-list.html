@@ -1,143 +1,176 @@
-    <div>
-      <div class="flex items-center justify-between mb-6">
-        <h1 class="text-2xl font-bold text-gray-900">Products</h1>
-        @if (isAdmin()) {
-          <a
-            routerLink="/backoffice/products/new"
-            class="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-500 text-sm"
-          >
-            Add Product
-          </a>
-        }
+<div>
+  <app-page-header title="Products">
+    <ng-container actions>
+      @if (isAdmin()) {
+        <a
+          routerLink="/backoffice/products/new"
+          class="inline-flex items-center px-4 py-2.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-500 text-sm font-semibold shadow-sm"
+        >
+          <svg class="w-4 h-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+          </svg>
+          Add Product
+        </a>
+      }
+    </ng-container>
+  </app-page-header>
+
+  <!-- Filters -->
+  <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 mb-6">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div>
+        <label for="pl-search" class="block text-xs font-medium text-slate-500 mb-1.5">Search</label>
+        <input
+          id="pl-search"
+          type="text"
+          [(ngModel)]="search"
+          (ngModelChange)="onFilterChange()"
+          placeholder="Search products..."
+          class="w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+        />
       </div>
-
-      <!-- Filters -->
-      <div class="bg-white rounded-lg shadow p-4 mb-6">
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <input
-            type="text"
-            [(ngModel)]="search"
-            (ngModelChange)="onFilterChange()"
-            placeholder="Search products..."
-            class="border border-gray-300 rounded px-3 py-2 text-sm"
-          />
-          <select
-            [(ngModel)]="activeFilter"
-            (ngModelChange)="onFilterChange()"
-            class="border border-gray-300 rounded px-3 py-2 text-sm"
-          >
-            <option value="">All Status</option>
-            <option value="true">Active</option>
-            <option value="false">Inactive</option>
-          </select>
-          <select
-            [(ngModel)]="sortField"
-            (ngModelChange)="onFilterChange()"
-            class="border border-gray-300 rounded px-3 py-2 text-sm"
-          >
-            <option value="">Default Sort</option>
-            <option value="name">Name</option>
-            <option value="price">Price</option>
-            <option value="stock">Stock</option>
-            <option value="createdAt">Date Created</option>
-          </select>
-        </div>
+      <div>
+        <label for="pl-status" class="block text-xs font-medium text-slate-500 mb-1.5">Status</label>
+        <select
+          id="pl-status"
+          [(ngModel)]="activeFilter"
+          (ngModelChange)="onFilterChange()"
+          class="w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+        >
+          <option value="">All Status</option>
+          <option value="true">Active</option>
+          <option value="false">Inactive</option>
+        </select>
       </div>
+      <div>
+        <label for="pl-sort" class="block text-xs font-medium text-slate-500 mb-1.5">Sort By</label>
+        <select
+          id="pl-sort"
+          [(ngModel)]="sortField"
+          (ngModelChange)="onFilterChange()"
+          class="w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+        >
+          <option value="">Default Sort</option>
+          <option value="name">Name</option>
+          <option value="price">Price</option>
+          <option value="stock">Stock</option>
+          <option value="createdAt">Date Created</option>
+        </select>
+      </div>
+    </div>
+  </div>
 
-      @if (loading()) {
-        <p class="text-gray-500">Loading products...</p>
-      } @else if (products().length === 0) {
-        <p class="text-gray-500">No products found.</p>
-      } @else {
-        <div class="bg-white rounded-lg shadow overflow-hidden">
-          <table class="min-w-full divide-y divide-gray-200">
-            <thead class="bg-gray-50">
-              <tr>
-                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Image</th>
-                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
-                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">SKU</th>
-                <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Price</th>
-                <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Stock</th>
-                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-gray-200">
-              @for (product of products(); track product.id) {
-                <tr class="hover:bg-gray-50">
-                  <td class="px-4 py-3">
-                    @if (product.images.length > 0) {
-                      <img [src]="product.images[0].imageUrl" alt="" class="w-10 h-10 object-cover rounded" />
-                    } @else {
-                      <div class="w-10 h-10 bg-gray-200 rounded flex items-center justify-center text-xs text-gray-400">N/A</div>
-                    }
-                  </td>
-                  <td class="px-4 py-3 text-sm text-gray-700">
-                    <div>{{ product.name }}</div>
-                    <div class="text-xs text-gray-400">{{ product.category.name }} / {{ product.brand.name }}</div>
-                  </td>
-                  <td class="px-4 py-3 text-sm text-gray-500">{{ product.sku }}</td>
-                  <td class="px-4 py-3 text-sm text-right text-gray-700">{{ product.price | thaiBaht }}</td>
-                  <td class="px-4 py-3 text-sm text-right" [class]="product.stock <= 0 ? 'text-red-600 font-medium' : 'text-gray-700'">
-                    {{ product.stock }}
-                  </td>
-                  <td class="px-4 py-3">
-                    <button
-                      (click)="onToggleActive(product)"
-                      class="inline-flex px-2 py-0.5 text-xs font-medium rounded-full cursor-pointer"
-                      [class]="product.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'"
-                    >
-                      {{ product.isActive ? 'Active' : 'Inactive' }}
-                    </button>
-                  </td>
-                  <td class="px-4 py-3">
-                    <div class="flex gap-2">
-                      @if (isAdmin()) {
-                        <a
-                          [routerLink]="['/backoffice/products', product.id, 'edit']"
-                          class="text-sm text-indigo-600 hover:text-indigo-800"
-                        >
-                          Edit
-                        </a>
-                        <button
-                          (click)="onDelete(product)"
-                          class="text-sm text-red-600 hover:text-red-800 cursor-pointer"
-                        >
-                          Delete
-                        </button>
-                      }
-                    </div>
-                  </td>
-                </tr>
-              }
-            </tbody>
-          </table>
-        </div>
-
-        <!-- Pagination -->
-        @if (pagination()) {
-          <div class="flex items-center justify-between mt-4">
-            <p class="text-sm text-gray-600">
-              Showing page {{ pagination()!.page }} of {{ pagination()!.totalPages }}
-              ({{ pagination()!.total }} total)
-            </p>
-            <div class="flex gap-2">
-              <button
-                (click)="goToPage(pagination()!.page - 1)"
-                [disabled]="pagination()!.page <= 1"
-                class="px-3 py-1 text-sm border rounded disabled:opacity-50 cursor-pointer disabled:cursor-default"
-              >
-                Previous
-              </button>
-              <button
-                (click)="goToPage(pagination()!.page + 1)"
-                [disabled]="pagination()!.page >= pagination()!.totalPages"
-                class="px-3 py-1 text-sm border rounded disabled:opacity-50 cursor-pointer disabled:cursor-default"
-              >
-                Next
-              </button>
+  @if (loading()) {
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+      <div class="divide-y divide-slate-200">
+        @for (_ of [1, 2, 3, 4, 5]; track $index) {
+          <div class="px-5 py-4 flex items-center gap-4 animate-pulse">
+            <div class="w-10 h-10 bg-slate-200 rounded"></div>
+            <div class="flex-1 space-y-1.5">
+              <div class="h-4 w-40 bg-slate-200 rounded"></div>
+              <div class="h-3 w-24 bg-slate-200 rounded"></div>
             </div>
+            <div class="h-4 w-16 bg-slate-200 rounded"></div>
+            <div class="h-4 w-20 bg-slate-200 rounded"></div>
           </div>
         }
-      }
+      </div>
     </div>
+  } @else if (products().length === 0) {
+    <app-empty-state title="No products found" description="Try adjusting your filters or add a new product.">
+      <ng-container icon>
+        <svg class="w-10 h-10 text-slate-400" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" d="m20.25 7.5-.625 10.632a2.25 2.25 0 0 1-2.247 2.118H6.622a2.25 2.25 0 0 1-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125Z" />
+        </svg>
+      </ng-container>
+    </app-empty-state>
+  } @else {
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+      <table class="min-w-full divide-y divide-slate-200">
+        <thead class="bg-slate-50">
+          <tr>
+            <th class="px-5 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Image</th>
+            <th class="px-5 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Name</th>
+            <th class="px-5 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">SKU</th>
+            <th class="px-5 py-3 text-right text-xs font-medium text-slate-500 uppercase tracking-wider">Price</th>
+            <th class="px-5 py-3 text-right text-xs font-medium text-slate-500 uppercase tracking-wider">Stock</th>
+            <th class="px-5 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Status</th>
+            <th class="px-5 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-200">
+          @for (product of products(); track product.id) {
+            <tr class="hover:bg-slate-50 transition-colors">
+              <td class="px-5 py-3">
+                @if (product.images.length > 0) {
+                  <img [src]="product.images[0].imageUrl" alt="" class="w-10 h-10 object-cover rounded-lg" />
+                } @else {
+                  <div class="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center">
+                    <svg class="w-5 h-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909M3.75 21h16.5a2.25 2.25 0 0 0 2.25-2.25V5.25a2.25 2.25 0 0 0-2.25-2.25H3.75a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 3.75 21Z" />
+                    </svg>
+                  </div>
+                }
+              </td>
+              <td class="px-5 py-3">
+                <div class="text-sm font-medium text-slate-700">{{ product.name }}</div>
+                <div class="text-xs text-slate-400">{{ product.category.name }} / {{ product.brand.name }}</div>
+              </td>
+              <td class="px-5 py-3 text-sm text-slate-500 font-mono">{{ product.sku }}</td>
+              <td class="px-5 py-3 text-sm text-right font-medium text-slate-700">{{ product.price | thaiBaht }}</td>
+              <td class="px-5 py-3 text-sm text-right" [class]="product.stock <= 0 ? 'text-red-600 font-semibold' : 'text-slate-700'">
+                {{ product.stock }}
+              </td>
+              <td class="px-5 py-3">
+                <button
+                  (click)="onToggleActive(product); $event.stopPropagation()"
+                  class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-full cursor-pointer transition-colors"
+                  [class]="product.isActive ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700'"
+                >
+                  <span class="w-1.5 h-1.5 rounded-full" [class]="product.isActive ? 'bg-emerald-500' : 'bg-red-500'"></span>
+                  {{ product.isActive ? 'Active' : 'Inactive' }}
+                </button>
+              </td>
+              <td class="px-5 py-3">
+                <div class="flex items-center gap-2">
+                  @if (isAdmin()) {
+                    <a
+                      [routerLink]="['/backoffice/products', product.id, 'edit']"
+                      class="text-sm font-medium text-indigo-600 hover:text-indigo-800"
+                    >
+                      Edit
+                    </a>
+                    <button
+                      (click)="confirmDelete(product); $event.stopPropagation()"
+                      class="text-sm font-medium text-red-600 hover:text-red-800 cursor-pointer"
+                    >
+                      Delete
+                    </button>
+                  }
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    @if (pagination(); as pg) {
+      <div class="flex items-center justify-between mt-5">
+        <p class="text-sm text-slate-500">
+          Showing page {{ pg.page }} of {{ pg.totalPages }} ({{ pg.total }} products)
+        </p>
+        <app-pagination [page]="pg.page" [totalPages]="pg.totalPages" (pageChange)="goToPage($event)" />
+      </div>
+    }
+  }
+
+  <app-confirm-dialog
+    #deleteDialog
+    title="Delete Product"
+    message="Are you sure you want to delete this product? This action cannot be undone."
+    confirmLabel="Delete"
+    [destructive]="true"
+    (confirmed)="onDeleteConfirmed()"
+  />
+</div>

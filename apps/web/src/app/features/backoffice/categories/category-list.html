@@ -1,106 +1,126 @@
-    <div>
-      <div class="flex items-center justify-between mb-6">
-        <h1 class="text-2xl font-bold text-gray-900">Categories</h1>
-        @if (isAdmin()) {
-          <a
-            routerLink="/backoffice/categories/new"
-            class="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-500 text-sm"
-          >
-            Add Category
-          </a>
-        }
-      </div>
+<div>
+  <app-page-header title="Categories">
+    <ng-container actions>
+      @if (isAdmin()) {
+        <a
+          routerLink="/backoffice/categories/new"
+          class="inline-flex items-center px-4 py-2.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-500 text-sm font-semibold shadow-sm"
+        >
+          <svg class="w-4 h-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+          </svg>
+          Add Category
+        </a>
+      }
+    </ng-container>
+  </app-page-header>
 
-      <div class="bg-white rounded-lg shadow p-4 mb-6">
-        <input
-          type="text"
-          [(ngModel)]="search"
-          (ngModelChange)="onFilterChange()"
-          placeholder="Search categories..."
-          class="border border-gray-300 rounded px-3 py-2 text-sm w-full md:w-1/3"
-        />
-      </div>
+  <!-- Search -->
+  <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 mb-6">
+    <div class="max-w-sm">
+      <label for="cl-search" class="block text-xs font-medium text-slate-500 mb-1.5">Search</label>
+      <input
+        id="cl-search"
+        type="text"
+        [(ngModel)]="search"
+        (ngModelChange)="onFilterChange()"
+        placeholder="Search categories..."
+        class="w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+      />
+    </div>
+  </div>
 
-      @if (loading()) {
-        <p class="text-gray-500">Loading categories...</p>
-      } @else if (categories().length === 0) {
-        <p class="text-gray-500">No categories found.</p>
-      } @else {
-        <div class="bg-white rounded-lg shadow overflow-hidden">
-          <table class="min-w-full divide-y divide-gray-200">
-            <thead class="bg-gray-50">
-              <tr>
-                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
-                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Slug</th>
-                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Parent</th>
-                <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Products</th>
-                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-gray-200">
-              @for (cat of categories(); track cat.id) {
-                <tr class="hover:bg-gray-50">
-                  <td class="px-4 py-3 text-sm text-gray-700 font-medium">{{ cat.name }}</td>
-                  <td class="px-4 py-3 text-sm text-gray-500">{{ cat.slug }}</td>
-                  <td class="px-4 py-3 text-sm text-gray-500">{{ cat.parent?.name ?? '—' }}</td>
-                  <td class="px-4 py-3 text-sm text-right text-gray-600">{{ cat._count?.products ?? 0 }}</td>
-                  <td class="px-4 py-3">
-                    <button
-                      (click)="onToggleActive(cat)"
-                      class="inline-flex px-2 py-0.5 text-xs font-medium rounded-full cursor-pointer"
-                      [class]="cat.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'"
-                    >
-                      {{ cat.isActive ? 'Active' : 'Inactive' }}
-                    </button>
-                  </td>
-                  <td class="px-4 py-3">
-                    <div class="flex gap-2">
-                      @if (isAdmin()) {
-                        <a
-                          [routerLink]="['/backoffice/categories', cat.id, 'edit']"
-                          class="text-sm text-indigo-600 hover:text-indigo-800"
-                        >
-                          Edit
-                        </a>
-                        <button
-                          (click)="onDelete(cat)"
-                          class="text-sm text-red-600 hover:text-red-800 cursor-pointer"
-                        >
-                          Delete
-                        </button>
-                      }
-                    </div>
-                  </td>
-                </tr>
-              }
-            </tbody>
-          </table>
-        </div>
-
-        @if (pagination()) {
-          <div class="flex items-center justify-between mt-4">
-            <p class="text-sm text-gray-600">
-              Showing page {{ pagination()!.page }} of {{ pagination()!.totalPages }}
-              ({{ pagination()!.total }} total)
-            </p>
-            <div class="flex gap-2">
-              <button
-                (click)="goToPage(pagination()!.page - 1)"
-                [disabled]="pagination()!.page <= 1"
-                class="px-3 py-1 text-sm border rounded disabled:opacity-50 cursor-pointer disabled:cursor-default"
-              >
-                Previous
-              </button>
-              <button
-                (click)="goToPage(pagination()!.page + 1)"
-                [disabled]="pagination()!.page >= pagination()!.totalPages"
-                class="px-3 py-1 text-sm border rounded disabled:opacity-50 cursor-pointer disabled:cursor-default"
-              >
-                Next
-              </button>
-            </div>
+  @if (loading()) {
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+      <div class="divide-y divide-slate-200">
+        @for (_ of [1, 2, 3, 4]; track $index) {
+          <div class="px-5 py-4 flex items-center gap-4 animate-pulse">
+            <div class="h-4 w-32 bg-slate-200 rounded"></div>
+            <div class="h-4 w-24 bg-slate-200 rounded"></div>
+            <div class="h-4 w-20 bg-slate-200 rounded"></div>
+            <div class="h-4 w-10 bg-slate-200 rounded ml-auto"></div>
           </div>
         }
-      }
+      </div>
     </div>
+  } @else if (categories().length === 0) {
+    <app-empty-state title="No categories found" description="Try adjusting your search or add a new category.">
+      <ng-container icon>
+        <svg class="w-10 h-10 text-slate-400" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 0 1 6 3.75h2.25A2.25 2.25 0 0 1 10.5 6v2.25a2.25 2.25 0 0 1-2.25 2.25H6a2.25 2.25 0 0 1-2.25-2.25V6ZM3.75 15.75A2.25 2.25 0 0 1 6 13.5h2.25a2.25 2.25 0 0 1 2.25 2.25V18a2.25 2.25 0 0 1-2.25 2.25H6A2.25 2.25 0 0 1 3.75 18v-2.25ZM13.5 6a2.25 2.25 0 0 1 2.25-2.25H18A2.25 2.25 0 0 1 20.25 6v2.25A2.25 2.25 0 0 1 18 10.5h-2.25a2.25 2.25 0 0 1-2.25-2.25V6ZM13.5 15.75a2.25 2.25 0 0 1 2.25-2.25H18a2.25 2.25 0 0 1 2.25 2.25V18A2.25 2.25 0 0 1 18 20.25h-2.25a2.25 2.25 0 0 1-2.25-2.25v-2.25Z" />
+        </svg>
+      </ng-container>
+    </app-empty-state>
+  } @else {
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+      <table class="min-w-full divide-y divide-slate-200">
+        <thead class="bg-slate-50">
+          <tr>
+            <th class="px-5 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Name</th>
+            <th class="px-5 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Slug</th>
+            <th class="px-5 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Parent</th>
+            <th class="px-5 py-3 text-right text-xs font-medium text-slate-500 uppercase tracking-wider">Products</th>
+            <th class="px-5 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Status</th>
+            <th class="px-5 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-200">
+          @for (cat of categories(); track cat.id) {
+            <tr class="hover:bg-slate-50 transition-colors">
+              <td class="px-5 py-3.5 text-sm font-medium text-slate-700">{{ cat.name }}</td>
+              <td class="px-5 py-3.5 text-sm text-slate-500 font-mono">{{ cat.slug }}</td>
+              <td class="px-5 py-3.5 text-sm text-slate-500">{{ cat.parent?.name ?? '—' }}</td>
+              <td class="px-5 py-3.5 text-sm text-right text-slate-600">{{ cat._count?.products ?? 0 }}</td>
+              <td class="px-5 py-3.5">
+                <button
+                  (click)="onToggleActive(cat)"
+                  class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-full cursor-pointer transition-colors"
+                  [class]="cat.isActive ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700'"
+                >
+                  <span class="w-1.5 h-1.5 rounded-full" [class]="cat.isActive ? 'bg-emerald-500' : 'bg-red-500'"></span>
+                  {{ cat.isActive ? 'Active' : 'Inactive' }}
+                </button>
+              </td>
+              <td class="px-5 py-3.5">
+                <div class="flex items-center gap-2">
+                  @if (isAdmin()) {
+                    <a
+                      [routerLink]="['/backoffice/categories', cat.id, 'edit']"
+                      class="text-sm font-medium text-indigo-600 hover:text-indigo-800"
+                    >
+                      Edit
+                    </a>
+                    <button
+                      (click)="confirmDelete(cat)"
+                      class="text-sm font-medium text-red-600 hover:text-red-800 cursor-pointer"
+                    >
+                      Delete
+                    </button>
+                  }
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    @if (pagination(); as pg) {
+      <div class="flex items-center justify-between mt-5">
+        <p class="text-sm text-slate-500">
+          Showing page {{ pg.page }} of {{ pg.totalPages }} ({{ pg.total }} categories)
+        </p>
+        <app-pagination [page]="pg.page" [totalPages]="pg.totalPages" (pageChange)="goToPage($event)" />
+      </div>
+    }
+  }
+
+  <app-confirm-dialog
+    #deleteDialog
+    title="Delete Category"
+    message="Are you sure you want to delete this category? This action cannot be undone."
+    confirmLabel="Delete"
+    [destructive]="true"
+    (confirmed)="onDeleteConfirmed()"
+  />
+</div>

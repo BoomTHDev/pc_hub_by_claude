@@ -9,10 +9,11 @@ import {
 import { ThaiBahtPipe } from '../../../shared/pipes/thai-baht.pipe';
 import { PageHeader } from '../../../shared/components/page-header/page-header';
 import { AlertBanner } from '../../../shared/components/alert-banner/alert-banner';
+import { StatusBadge } from '../../../shared/components/status-badge/status-badge';
 
 @Component({
   selector: 'app-bo-analytics',
-  imports: [FormsModule, ThaiBahtPipe, PageHeader, AlertBanner],
+  imports: [FormsModule, ThaiBahtPipe, PageHeader, AlertBanner, StatusBadge],
   templateUrl: './analytics-page.html',
 })
 export class BoAnalyticsPage implements OnInit {

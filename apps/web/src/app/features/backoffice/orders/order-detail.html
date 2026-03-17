@@ -1,181 +1,218 @@
-    <div>
-      <a routerLink="/backoffice/orders" class="text-sm text-indigo-600 hover:text-indigo-800 mb-4 inline-block">
-        &larr; Back to Orders
-      </a>
+<div>
+  <a routerLink="/backoffice/orders" class="inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-indigo-600 mb-5 transition-colors">
+    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
+    </svg>
+    Back to Orders
+  </a>
 
-      @if (loading()) {
-        <p class="text-gray-500">Loading order...</p>
-      } @else if (order()) {
-        <div class="space-y-6">
-          <!-- Header -->
-          <div class="flex items-center justify-between">
-            <div>
-              <h1 class="text-2xl font-bold text-gray-900">Order {{ order()!.orderNumber }}</h1>
-              <p class="text-sm text-gray-500">{{ order()!.createdAt | date:'medium' }}</p>
-            </div>
-            <span
-              class="inline-flex px-3 py-1 text-sm font-medium rounded-full"
-              [class]="getStatusClasses(order()!.status)"
-            >
-              {{ order()!.status }}
+  @if (loading()) {
+    <div class="space-y-4 animate-pulse">
+      <div class="h-8 w-64 bg-slate-200 rounded"></div>
+      <div class="bg-white rounded-xl border border-slate-200 p-5 space-y-3">
+        <div class="h-4 w-48 bg-slate-200 rounded"></div>
+        <div class="h-4 w-32 bg-slate-200 rounded"></div>
+      </div>
+    </div>
+  } @else if (order(); as o) {
+    <div class="space-y-6">
+      <!-- Header -->
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div>
+          <div class="flex items-center gap-3">
+            <h1 class="text-2xl font-bold text-slate-900">Order</h1>
+            <span class="inline-flex items-center px-2.5 py-1 text-sm font-mono font-semibold bg-slate-100 text-slate-700 rounded-lg">
+              {{ o.orderNumber }}
             </span>
           </div>
+          <p class="text-sm text-slate-500 mt-1">{{ o.createdAt | date:'medium' }}</p>
+        </div>
+        <app-status-badge [status]="o.status" />
+      </div>
 
-          <!-- Actions -->
-          @if (canApprove()) {
-            <div class="bg-white rounded-lg shadow p-4 flex items-center gap-4">
-              <button
-                (click)="onApprove()"
-                [disabled]="actionLoading()"
-                class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-500 text-sm cursor-pointer disabled:opacity-50"
-              >
-                Approve
-              </button>
-              <button
-                (click)="showRejectForm.set(true)"
-                [disabled]="actionLoading()"
-                class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-500 text-sm cursor-pointer disabled:opacity-50"
-              >
-                Reject
-              </button>
-            </div>
+      <!-- Approve / Reject Actions -->
+      @if (canApprove()) {
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 flex items-center gap-3">
+          <span class="text-sm font-medium text-slate-600">Review this order:</span>
+          <button
+            (click)="onApprove()"
+            [disabled]="actionLoading()"
+            class="inline-flex items-center px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-500 text-sm font-semibold shadow-sm cursor-pointer disabled:opacity-50"
+          >
+            Approve
+          </button>
+          <button
+            (click)="showRejectForm.set(true)"
+            [disabled]="actionLoading()"
+            class="inline-flex items-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-500 text-sm font-semibold shadow-sm cursor-pointer disabled:opacity-50"
+          >
+            Reject
+          </button>
+        </div>
+      }
+
+      <!-- Advance Status Actions -->
+      @if (canAdvance()) {
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 flex items-center gap-3">
+          <span class="text-sm font-medium text-slate-600">Advance status:</span>
+          @if (o.status === 'APPROVED' || o.status === 'PROCESSING') {
+            <button
+              (click)="onAdvance(o.status === 'APPROVED' ? 'PROCESSING' : 'SHIPPED')"
+              [disabled]="actionLoading()"
+              class="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-500 text-sm font-semibold shadow-sm cursor-pointer disabled:opacity-50"
+            >
+              {{ o.status === 'APPROVED' ? 'Mark Processing' : 'Mark Shipped' }}
+            </button>
           }
-
-          @if (canAdvance()) {
-            <div class="bg-white rounded-lg shadow p-4 flex items-center gap-4">
-              <span class="text-sm text-gray-600">Advance status:</span>
-              @if (order()!.status === 'APPROVED' || order()!.status === 'PROCESSING') {
-                <button
-                  (click)="onAdvance(order()!.status === 'APPROVED' ? 'PROCESSING' : 'SHIPPED')"
-                  [disabled]="actionLoading()"
-                  class="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-500 text-sm cursor-pointer disabled:opacity-50"
-                >
-                  {{ order()!.status === 'APPROVED' ? 'Mark Processing' : 'Mark Shipped' }}
-                </button>
-              }
-              @if (order()!.status === 'SHIPPED') {
-                <button
-                  (click)="onAdvance('DELIVERED')"
-                  [disabled]="actionLoading()"
-                  class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-500 text-sm cursor-pointer disabled:opacity-50"
-                >
-                  Mark Delivered
-                </button>
-              }
-            </div>
+          @if (o.status === 'SHIPPED') {
+            <button
+              (click)="onAdvance('DELIVERED')"
+              [disabled]="actionLoading()"
+              class="inline-flex items-center px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-500 text-sm font-semibold shadow-sm cursor-pointer disabled:opacity-50"
+            >
+              Mark Delivered
+            </button>
           }
+        </div>
+      }
 
-          <!-- Reject Form -->
-          @if (showRejectForm()) {
-            <div class="bg-white rounded-lg shadow p-4">
-              <h3 class="text-sm font-medium text-gray-700 mb-2">Rejection Reason</h3>
-              <textarea
-                [(ngModel)]="rejectReason"
-                rows="3"
-                class="w-full border border-gray-300 rounded px-3 py-2 text-sm"
-                placeholder="Enter reason for rejection..."
-              ></textarea>
-              <div class="flex gap-2 mt-2">
-                <button
-                  (click)="onReject()"
-                  [disabled]="!rejectReason.trim() || actionLoading()"
-                  class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-500 text-sm cursor-pointer disabled:opacity-50"
-                >
-                  Confirm Reject
-                </button>
-                <button
-                  (click)="showRejectForm.set(false)"
-                  class="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 text-sm cursor-pointer"
-                >
-                  Cancel
-                </button>
+      <!-- Reject Form -->
+      @if (showRejectForm()) {
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
+          <h3 class="text-sm font-semibold text-slate-700 mb-2">Rejection Reason</h3>
+          <textarea
+            [(ngModel)]="rejectReason"
+            rows="3"
+            class="w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+            placeholder="Enter reason for rejection..."
+          ></textarea>
+          <div class="flex gap-2 mt-3">
+            <button
+              (click)="onReject()"
+              [disabled]="!rejectReason.trim() || actionLoading()"
+              class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-500 text-sm font-semibold cursor-pointer disabled:opacity-50"
+            >
+              Confirm Reject
+            </button>
+            <button
+              (click)="showRejectForm.set(false)"
+              class="px-4 py-2 border border-slate-300 bg-white text-slate-700 rounded-lg hover:bg-slate-50 text-sm font-semibold cursor-pointer"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      }
+
+      @if (errorMsg()) {
+        <app-alert-banner type="error" [message]="errorMsg()" />
+      }
+
+      <!-- Customer -->
+      <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
+        <h2 class="text-base font-semibold text-slate-800 mb-3">Customer</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm">
+          <div>
+            <p class="text-slate-500">Name</p>
+            <p class="font-medium text-slate-700">{{ o.customer.firstName }} {{ o.customer.lastName }}</p>
+          </div>
+          <div>
+            <p class="text-slate-500">Email</p>
+            <p class="font-medium text-slate-700">{{ o.customer.email }}</p>
+          </div>
+          <div>
+            <p class="text-slate-500">Phone</p>
+            <p class="font-medium text-slate-700">{{ o.customer.phoneNumber }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Items -->
+      <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+        <div class="px-5 pt-5 pb-3">
+          <h2 class="text-base font-semibold text-slate-800">Items</h2>
+        </div>
+        <table class="min-w-full divide-y divide-slate-200">
+          <thead class="bg-slate-50">
+            <tr>
+              <th class="px-5 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Product</th>
+              <th class="px-5 py-3 text-right text-xs font-medium text-slate-500 uppercase tracking-wider">Qty</th>
+              <th class="px-5 py-3 text-right text-xs font-medium text-slate-500 uppercase tracking-wider">Unit Price</th>
+              <th class="px-5 py-3 text-right text-xs font-medium text-slate-500 uppercase tracking-wider">Line Total</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100">
+            @for (item of o.items; track item.id) {
+              <tr>
+                <td class="px-5 py-3 text-sm text-slate-700">{{ getProductName(item.productSnapshot) }}</td>
+                <td class="px-5 py-3 text-sm text-right text-slate-600">{{ item.quantity }}</td>
+                <td class="px-5 py-3 text-sm text-right text-slate-600">{{ item.unitPrice | thaiBaht }}</td>
+                <td class="px-5 py-3 text-sm text-right font-medium text-slate-700">{{ item.lineTotal | thaiBaht }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+        <div class="border-t border-slate-200 bg-slate-50 px-5 py-4 space-y-1 text-sm text-right">
+          <p class="text-slate-500">Subtotal: <span class="font-medium text-slate-700">{{ o.subtotalAmount | thaiBaht }}</span></p>
+          <p class="text-slate-500">Shipping: <span class="font-medium text-slate-700">{{ o.shippingAmount | thaiBaht }}</span></p>
+          <p class="text-base font-bold text-slate-900 pt-1">Total: {{ o.totalAmount | thaiBaht }}</p>
+        </div>
+      </div>
+
+      <!-- Payment -->
+      @if (o.payment; as pay) {
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
+          <h2 class="text-base font-semibold text-slate-800 mb-3">Payment</h2>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm mb-4">
+            <div>
+              <p class="text-slate-500">Method</p>
+              <p class="font-medium text-slate-700">{{ pay.paymentMethod }}</p>
+            </div>
+            <div>
+              <p class="text-slate-500">Status</p>
+              <div class="mt-0.5">
+                <app-status-badge [status]="pay.status" />
               </div>
             </div>
-          }
-
-          @if (errorMsg()) {
-            <p class="text-sm text-red-600">{{ errorMsg() }}</p>
-          }
-
-          <!-- Customer -->
-          <div class="bg-white rounded-lg shadow p-4">
-            <h2 class="text-lg font-semibold text-gray-800 mb-2">Customer</h2>
-            <p class="text-sm text-gray-700">{{ order()!.customer.firstName }} {{ order()!.customer.lastName }}</p>
-            <p class="text-sm text-gray-500">{{ order()!.customer.email }}</p>
-            <p class="text-sm text-gray-500">{{ order()!.customer.phoneNumber }}</p>
-          </div>
-
-          <!-- Items -->
-          <div class="bg-white rounded-lg shadow p-4">
-            <h2 class="text-lg font-semibold text-gray-800 mb-3">Items</h2>
-            <table class="min-w-full divide-y divide-gray-200">
-              <thead>
-                <tr>
-                  <th class="text-left text-xs font-medium text-gray-500 uppercase pb-2">Product</th>
-                  <th class="text-right text-xs font-medium text-gray-500 uppercase pb-2">Qty</th>
-                  <th class="text-right text-xs font-medium text-gray-500 uppercase pb-2">Unit Price</th>
-                  <th class="text-right text-xs font-medium text-gray-500 uppercase pb-2">Line Total</th>
-                </tr>
-              </thead>
-              <tbody class="divide-y divide-gray-100">
-                @for (item of order()!.items; track item.id) {
-                  <tr>
-                    <td class="py-2 text-sm text-gray-700">{{ getProductName(item.productSnapshot) }}</td>
-                    <td class="py-2 text-sm text-right text-gray-600">{{ item.quantity }}</td>
-                    <td class="py-2 text-sm text-right text-gray-600">{{ item.unitPrice | thaiBaht }}</td>
-                    <td class="py-2 text-sm text-right text-gray-700 font-medium">{{ item.lineTotal | thaiBaht }}</td>
-                  </tr>
-                }
-              </tbody>
-            </table>
-            <div class="border-t border-gray-200 pt-3 mt-3 space-y-1 text-sm text-right">
-              <p class="text-gray-600">Subtotal: {{ order()!.subtotalAmount | thaiBaht }}</p>
-              <p class="text-gray-600">Shipping: {{ order()!.shippingAmount | thaiBaht }}</p>
-              <p class="font-bold text-gray-900">Total: {{ order()!.totalAmount | thaiBaht }}</p>
+            <div>
+              <p class="text-slate-500">Amount</p>
+              <p class="font-medium text-slate-700">{{ pay.amount | thaiBaht }}</p>
             </div>
           </div>
 
-          <!-- Payment -->
-          @if (order()!.payment) {
-            <div class="bg-white rounded-lg shadow p-4">
-              <h2 class="text-lg font-semibold text-gray-800 mb-2">Payment</h2>
-              <p class="text-sm text-gray-700">Method: {{ order()!.payment!.paymentMethod }}</p>
-              <p class="text-sm text-gray-700">Status: {{ order()!.payment!.status }}</p>
-              <p class="text-sm text-gray-700">Amount: {{ order()!.payment!.amount | thaiBaht }}</p>
-
-              @if (order()!.payment!.slips.length > 0) {
-                <h3 class="text-sm font-medium text-gray-700 mt-3 mb-2">Payment Slips</h3>
-                <div class="flex flex-wrap gap-3">
-                  @for (slip of order()!.payment!.slips; track slip.id) {
-                    <div class="border rounded p-2">
-                      <img [src]="slip.imageUrl" alt="Payment slip" class="w-48 h-auto rounded" />
-                      <p class="text-xs text-gray-500 mt-1">{{ slip.uploadedAt | date:'short' }}</p>
-                    </div>
-                  }
+          @if (pay.slips.length > 0) {
+            <h3 class="text-sm font-semibold text-slate-700 mb-2">Payment Slips</h3>
+            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+              @for (slip of pay.slips; track slip.id) {
+                <div class="border border-slate-200 rounded-lg overflow-hidden">
+                  <img [src]="slip.imageUrl" alt="Payment slip" class="w-full h-40 object-cover" />
+                  <p class="text-xs text-slate-500 px-2 py-1.5">{{ slip.uploadedAt | date:'short' }}</p>
                 </div>
               }
             </div>
           }
-
-          <!-- Rejection info -->
-          @if (order()!.rejectReason) {
-            <div class="bg-red-50 border border-red-200 rounded-lg p-4">
-              <h2 class="text-sm font-semibold text-red-800 mb-1">Rejection Reason</h2>
-              <p class="text-sm text-red-700">{{ order()!.rejectReason }}</p>
-            </div>
-          }
-
-          <!-- Address -->
-          <div class="bg-white rounded-lg shadow p-4">
-            <h2 class="text-lg font-semibold text-gray-800 mb-2">Shipping Address</h2>
-            <div class="text-sm text-gray-700 space-y-0.5">
-              @for (entry of addressEntries(); track entry[0]) {
-                <p><span class="text-gray-500">{{ entry[0] }}:</span> {{ entry[1] }}</p>
-              }
-            </div>
-          </div>
         </div>
-      } @else {
-        <p class="text-red-600">Order not found.</p>
       }
+
+      <!-- Rejection reason -->
+      @if (o.rejectReason) {
+        <div class="bg-red-50 border border-red-200 rounded-xl p-5">
+          <h2 class="text-sm font-semibold text-red-800 mb-1">Rejection Reason</h2>
+          <p class="text-sm text-red-700">{{ o.rejectReason }}</p>
+        </div>
+      }
+
+      <!-- Shipping Address -->
+      <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
+        <h2 class="text-base font-semibold text-slate-800 mb-3">Shipping Address</h2>
+        <div class="text-sm text-slate-700 space-y-1">
+          @for (entry of addressEntries(); track entry[0]) {
+            <p><span class="text-slate-500">{{ entry[0] }}:</span> {{ entry[1] }}</p>
+          }
+        </div>
+      </div>
     </div>
+  } @else {
+    <app-alert-banner type="error" message="Order not found." />
+  }
+</div>

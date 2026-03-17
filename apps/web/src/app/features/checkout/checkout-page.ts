@@ -86,17 +86,17 @@ export class CheckoutPage implements OnInit {
 
     const obs = this.isBuyNow
       ? this.cartService.buyNow({
-          productId: this.buyNowProductId,
-          quantity: this.buyNowQuantity,
-          addressId,
-          paymentMethod: this.paymentMethod(),
-          customerNote: note,
-        })
+        productId: this.buyNowProductId,
+        quantity: this.buyNowQuantity,
+        addressId,
+        paymentMethod: this.paymentMethod(),
+        customerNote: note,
+      })
       : this.cartService.checkoutFromCart({
-          addressId,
-          paymentMethod: this.paymentMethod(),
-          customerNote: note,
-        });
+        addressId,
+        paymentMethod: this.paymentMethod(),
+        customerNote: note,
+      });
 
     obs.subscribe({
       next: (res) => {
@@ -129,7 +129,10 @@ export class CheckoutPage implements OnInit {
         if (defaultAddr) {
           this.selectedAddressId.set(defaultAddr.id);
         } else if (res.data.length > 0) {
-          this.selectedAddressId.set(res.data[0]!.id);
+          const firstAddress = res.data[0];
+          if (firstAddress) {
+            this.selectedAddressId.set(firstAddress.id);
+          }
         }
 
         // Load items

@@ -3,15 +3,15 @@ import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { BackofficeCatalogService, type AdminBrand } from '../../../core/services/backoffice-catalog.service';
 import { AuthService } from '../../../core/services/auth.service';
-import { StatusBadge } from '../../../shared/components/status-badge/status-badge';
 import { PageHeader } from '../../../shared/components/page-header/page-header';
 import { Pagination } from '../../../shared/components/pagination/pagination';
 import { ConfirmDialog } from '../../../shared/components/confirm-dialog/confirm-dialog';
+import { EmptyState } from '../../../shared/components/empty-state/empty-state';
 import type { PaginationMeta } from '../../../shared/models/pagination.model';
 
 @Component({
   selector: 'app-bo-brand-list',
-  imports: [RouterLink, FormsModule, StatusBadge, PageHeader, Pagination, ConfirmDialog],
+  imports: [RouterLink, FormsModule, PageHeader, Pagination, ConfirmDialog, EmptyState],
   templateUrl: './brand-list.html',
 })
 export class BoBrandListPage implements OnInit {

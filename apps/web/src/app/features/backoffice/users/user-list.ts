@@ -8,11 +8,12 @@ import { PageHeader } from '../../../shared/components/page-header/page-header';
 import { Pagination } from '../../../shared/components/pagination/pagination';
 import { ConfirmDialog } from '../../../shared/components/confirm-dialog/confirm-dialog';
 import { AlertBanner } from '../../../shared/components/alert-banner/alert-banner';
+import { EmptyState } from '../../../shared/components/empty-state/empty-state';
 import type { PaginationMeta } from '../../../shared/models/pagination.model';
 
 @Component({
   selector: 'app-bo-user-list',
-  imports: [RouterLink, FormsModule, DatePipe, PageHeader, Pagination, ConfirmDialog, AlertBanner],
+  imports: [RouterLink, FormsModule, DatePipe, PageHeader, Pagination, ConfirmDialog, AlertBanner, EmptyState],
   templateUrl: './user-list.html',
 })
 export class BoUserListPage implements OnInit {
@@ -94,11 +95,12 @@ export class BoUserListPage implements OnInit {
   }
 
   onDisableConfirmed() {
-    if (!this.pendingDisableUser) return;
-    this.userService.disableUser(this.pendingDisableUser.id).subscribe({
+    const target = this.pendingDisableUser;
+    if (!target) return;
+    this.userService.disableUser(target.id).subscribe({
       next: (res) => {
         const updated = this.users().map((u) =>
-          u.id === this.pendingDisableUser!.id ? { ...u, isActive: res.data.isActive } : u,
+          u.id === target.id ? { ...u, isActive: res.data.isActive } : u,
         );
         this.users.set(updated);
         this.pendingDisableUser = null;
@@ -114,7 +116,7 @@ export class BoUserListPage implements OnInit {
         page: this.currentPage,
         limit: 20,
         search: this.search || undefined,
-        role: (this.roleFilter as 'STAFF' | 'ADMIN') || undefined,
+        role: this.roleFilter === 'STAFF' || this.roleFilter === 'ADMIN' ? this.roleFilter : undefined,
       })
       .subscribe({
         next: (res) => {

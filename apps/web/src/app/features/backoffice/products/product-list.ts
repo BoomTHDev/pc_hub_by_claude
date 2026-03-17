@@ -4,15 +4,15 @@ import { FormsModule } from '@angular/forms';
 import { BackofficeCatalogService, type AdminProduct } from '../../../core/services/backoffice-catalog.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { ThaiBahtPipe } from '../../../shared/pipes/thai-baht.pipe';
-import { StatusBadge } from '../../../shared/components/status-badge/status-badge';
 import { PageHeader } from '../../../shared/components/page-header/page-header';
 import { Pagination } from '../../../shared/components/pagination/pagination';
 import { ConfirmDialog } from '../../../shared/components/confirm-dialog/confirm-dialog';
+import { EmptyState } from '../../../shared/components/empty-state/empty-state';
 import type { PaginationMeta } from '../../../shared/models/pagination.model';
 
 @Component({
   selector: 'app-bo-product-list',
-  imports: [RouterLink, FormsModule, ThaiBahtPipe, StatusBadge, PageHeader, Pagination, ConfirmDialog],
+  imports: [RouterLink, FormsModule, ThaiBahtPipe, PageHeader, Pagination, ConfirmDialog, EmptyState],
   templateUrl: './product-list.html',
 })
 export class BoProductListPage implements OnInit {
