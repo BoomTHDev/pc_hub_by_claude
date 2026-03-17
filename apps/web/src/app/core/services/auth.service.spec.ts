@@ -48,11 +48,7 @@ describe('AuthService', () => {
     removeItemSpy = vi.spyOn(Storage.prototype, 'removeItem');
 
     TestBed.configureTestingModule({
-      providers: [
-        provideRouter([]),
-        provideHttpClient(),
-        provideHttpClientTesting(),
-      ],
+      providers: [provideRouter([]), provideHttpClient(), provideHttpClientTesting()],
     });
 
     service = TestBed.inject(AuthService);
@@ -71,8 +67,8 @@ describe('AuthService', () => {
     it('sends POST, stores token in signal and localStorage, sets user', () => {
       service.login({ email: 'test@test.com', password: 'pw' }).subscribe();
 
-      const req = httpTesting.expectOne((r) =>
-        r.url.includes('/auth/login') && r.method === 'POST',
+      const req = httpTesting.expectOne(
+        (r) => r.url.includes('/auth/login') && r.method === 'POST',
       );
       expect(req.request.withCredentials).toBe(true);
       req.flush(MOCK_AUTH_RESPONSE);
@@ -86,16 +82,18 @@ describe('AuthService', () => {
 
   describe('register', () => {
     it('sends POST, stores token in signal and localStorage, sets user', () => {
-      service.register({
-        firstName: 'T',
-        lastName: 'U',
-        email: 'test@test.com',
-        phoneNumber: '0800000000',
-        password: 'password123',
-      }).subscribe();
+      service
+        .register({
+          firstName: 'T',
+          lastName: 'U',
+          email: 'test@test.com',
+          phoneNumber: '0800000000',
+          password: 'password123',
+        })
+        .subscribe();
 
-      const req = httpTesting.expectOne((r) =>
-        r.url.includes('/auth/register') && r.method === 'POST',
+      const req = httpTesting.expectOne(
+        (r) => r.url.includes('/auth/register') && r.method === 'POST',
       );
       expect(req.request.withCredentials).toBe(true);
       req.flush(MOCK_AUTH_RESPONSE);
@@ -110,8 +108,8 @@ describe('AuthService', () => {
     it('sends POST with credentials, updates accessToken in signal and localStorage', () => {
       service.refresh().subscribe();
 
-      const req = httpTesting.expectOne((r) =>
-        r.url.includes('/auth/refresh') && r.method === 'POST',
+      const req = httpTesting.expectOne(
+        (r) => r.url.includes('/auth/refresh') && r.method === 'POST',
       );
       expect(req.request.withCredentials).toBe(true);
       req.flush(MOCK_REFRESH_RESPONSE);
@@ -130,8 +128,8 @@ describe('AuthService', () => {
 
       // Now logout
       service.logout().subscribe();
-      const logoutReq = httpTesting.expectOne((r) =>
-        r.url.includes('/auth/logout') && r.method === 'POST',
+      const logoutReq = httpTesting.expectOne(
+        (r) => r.url.includes('/auth/logout') && r.method === 'POST',
       );
       logoutReq.flush({ success: true });
 
@@ -183,7 +181,7 @@ describe('AuthService', () => {
   });
 
   describe('restoreToken (constructor behavior)', () => {
-    it('reads token from localStorage on construction and calls fetchMe', () => {
+    it('reads token from localStorage on construction and calls fetchMe', async () => {
       vi.restoreAllMocks();
 
       // Pre-seed localStorage
@@ -194,15 +192,14 @@ describe('AuthService', () => {
       // Reset TestBed to trigger new constructor
       TestBed.resetTestingModule();
       TestBed.configureTestingModule({
-        providers: [
-          provideRouter([]),
-          provideHttpClient(),
-          provideHttpClientTesting(),
-        ],
+        providers: [provideRouter([]), provideHttpClient(), provideHttpClientTesting()],
       });
 
       const freshService = TestBed.inject(AuthService);
       const freshHttp = TestBed.inject(HttpTestingController);
+
+      // fetchMe is deferred via queueMicrotask — flush the microtask queue
+      await Promise.resolve();
 
       // Constructor should have called fetchMe
       const meReq = freshHttp.expectOne((r) => r.url.includes('/auth/me'));

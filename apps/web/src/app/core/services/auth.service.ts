@@ -28,7 +28,7 @@ export class AuthService {
   private readonly accessToken = signal<string | null>(null);
 
   readonly user = this.currentUser.asReadonly();
-  readonly isAuthenticated = computed(() => this.currentUser() !== null);
+  readonly isAuthenticated = computed(() => this.accessToken() !== null);
 
   constructor() {
     this.restoreToken();
@@ -52,11 +52,9 @@ export class AuthService {
 
   refresh() {
     return this.http
-      .post<ApiResponse<{ accessToken: string }>>(
-        `${this.apiUrl}/auth/refresh`,
-        {},
-        { withCredentials: true },
-      )
+      .post<
+        ApiResponse<{ accessToken: string }>
+      >(`${this.apiUrl}/auth/refresh`, {}, { withCredentials: true })
       .pipe(
         tap((res) => {
           this.accessToken.set(res.data.accessToken);
@@ -66,12 +64,10 @@ export class AuthService {
   }
 
   logout() {
-    return this.http
-      .post(`${this.apiUrl}/auth/logout`, {}, { withCredentials: true })
-      .pipe(
-        catchError(() => EMPTY),
-        tap(() => this.clearSession()),
-      );
+    return this.http.post(`${this.apiUrl}/auth/logout`, {}, { withCredentials: true }).pipe(
+      catchError(() => EMPTY),
+      tap(() => this.clearSession()),
+    );
   }
 
   fetchMe() {
@@ -104,7 +100,9 @@ export class AuthService {
     const token = localStorage.getItem('access_token');
     if (token) {
       this.accessToken.set(token);
-      this.fetchMe().subscribe();
+      // Defer fetchMe() to the next microtask to break the circular dependency:
+      // constructor → fetchMe → HttpClient → authInterceptor → inject(AuthService)
+      queueMicrotask(() => this.fetchMe().subscribe());
     }
   }
 }
