@@ -83,14 +83,14 @@ Uploads go through the API to Cloudinary. PromptPay QR is generated server-side,
 
 All planned Phases 1–7 are implemented in the current repository state.
 
-| Phase | Summary |
-|-------|---------|
-| Phase 1 | Project foundation, runtime envelope, baseline middleware |
-| Phase 2 | Auth, sessions, customer account, addresses |
-| Phase 3 | Catalog, storefront, admin CRUD |
-| Phase 4 | Cart, buy-now, checkout, stock validation |
-| Phase 5 | Payments, orders, PromptPay QR, slip upload, order tracking |
-| Phase 6 | Backoffice, reports, analytics, privileged user management |
+| Phase   | Summary                                                                                  |
+| ------- | ---------------------------------------------------------------------------------------- |
+| Phase 1 | Project foundation, runtime envelope, baseline middleware                                |
+| Phase 2 | Auth, sessions, customer account, addresses                                              |
+| Phase 3 | Catalog, storefront, admin CRUD                                                          |
+| Phase 4 | Cart, buy-now, checkout, stock validation                                                |
+| Phase 5 | Payments, orders, PromptPay QR, slip upload, order tracking                              |
+| Phase 6 | Backoffice, reports, analytics, privileged user management                               |
 | Phase 7 | Migrations, hardening, testing expansion, audit logging, CI, Docker/deployment readiness |
 
 ### Important Completed Fixes
@@ -116,14 +116,14 @@ A full frontend redesign was completed after Phase 7 using a **Clean Pro** desig
 
 ### Redesign Slices Completed
 
-| Slice | Description |
-|-------|-------------|
+| Slice   | Description                                     |
+| ------- | ----------------------------------------------- |
 | Slice 0 | Visual foundation, layout shells, global styles |
-| Slice 1 | Shared UI components |
-| Slice 2 | Auth pages + storefront catalog pages |
-| Slice 3 | Cart + checkout + order confirmation |
-| Slice 4 | Customer account pages |
-| Slice 5 | Backoffice pages |
+| Slice 1 | Shared UI components                            |
+| Slice 2 | Auth pages + storefront catalog pages           |
+| Slice 3 | Cart + checkout + order confirmation            |
+| Slice 4 | Customer account pages                          |
+| Slice 5 | Backoffice pages                                |
 
 ### Pages Redesigned
 
@@ -155,11 +155,11 @@ Unsafe non-null assertions and unsafe escape-hatch patterns were removed from to
 - Audit logging for privileged state-changing actions
 - Expanded backend tests
 
-### Production Docker Path
+### Deployment Direction
 
-Production Compose includes: `mysql`, `migrate`, `api`, `web`
+The preferred production deployment targets are **Vercel** (frontend) and **Railway** (API + MySQL). The codebase is platform-agnostic — the API reads environment variables directly and the Angular build uses a relative `/api/v1` path that works with Vercel rewrites.
 
-The `migrate` service runs migrations before the API starts. The web container serves Angular via nginx and proxies API traffic.
+A Docker Compose production stack exists in `docker/docker-compose.production.yml` as an optional self-hosted fallback. Dockerfiles and nginx config are in `docker/`. Docker is **not** the primary deployment path.
 
 ### CI
 
@@ -171,13 +171,13 @@ GitHub Actions workflow exists at `.github/workflows/ci.yml`. It runs build/lint
 
 At the last verified state:
 
-| | Web | API |
-|-|-----|-----|
-| Build | ✅ passing | ✅ passing |
-| Lint | ✅ passing | ✅ passing |
+|       | Web                     | API                     |
+| ----- | ----------------------- | ----------------------- |
+| Build | ✅ passing              | ✅ passing              |
+| Lint  | ✅ passing              | ✅ passing              |
 | Tests | ✅ 27 files / 110 tests | ✅ 23 files / 303 tests |
 
-Production Docker path was exercised and corrected during Phase 7F work. CI workflow exists and is intended to run both app pipelines in GitHub Actions.
+CI workflow exists and runs both app pipelines in GitHub Actions. A Docker Compose production stack is available in `docker/` as an optional self-hosted fallback but is not the primary deployment path.
 
 ### Verification Commands
 
@@ -270,7 +270,7 @@ cd ../web && npm test
 
 ### Infra
 
-- `docker-compose.production.yml`
+- `docker/docker-compose.production.yml` (optional self-hosted)
 - `.github/workflows/ci.yml`
 
 ---
@@ -313,12 +313,12 @@ cd apps/web
 npm run build && npm run lint && npm test
 ```
 
-### Production Docker Verification
+### Docker Self-Hosted Verification (optional)
 
 ```bash
-docker compose -f docker-compose.production.yml down -v
-docker compose -f docker-compose.production.yml build --no-cache
-docker compose -f docker-compose.production.yml up
+docker compose -f docker/docker-compose.production.yml down -v
+docker compose -f docker/docker-compose.production.yml build --no-cache
+docker compose -f docker/docker-compose.production.yml up
 ```
 
 Runtime checks:
@@ -335,12 +335,12 @@ Verify the nginx-served frontend at: `http://localhost`
 
 At handoff time, the meaningful recent history was:
 
-| Commit | Message |
-|--------|---------|
+| Commit    | Message                                                       |
+| --------- | ------------------------------------------------------------- |
 | `aa05105` | `feat: redesign storefront, account, and backoffice frontend` |
-| `407cdce` | `refactor: extract angular templates into html files` |
-| `1d7d888` | `fix: restore Tailwind build and MySQL adapter connectivity` |
-| `dc82487` | `fix: production docker and tailwind build issues` |
+| `407cdce` | `refactor: extract angular templates into html files`         |
+| `1d7d888` | `fix: restore Tailwind build and MySQL adapter connectivity`  |
+| `dc82487` | `fix: production docker and tailwind build issues`            |
 
 Before continuing work, verify current git state directly:
 

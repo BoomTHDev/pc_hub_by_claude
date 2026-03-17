@@ -5,6 +5,7 @@
 PC Hub is a production-ready e-commerce web application for selling computer hardware. The system is designed with a modern customer-facing storefront and a secure role-based back office for staff and admins.
 
 The architecture must support:
+
 - clean architecture of concerns
 - strict type safety
 - maintainability
@@ -24,6 +25,7 @@ The application uses a two-app repository structure:
 The backend exposes a REST API consumed by the frontend.
 
 External services:
+
 - MySQL for relational data
 - Cloudinary for image storage
 - Docker Compose for local development database services
@@ -85,6 +87,7 @@ External services:
 ### 4.1 Frontend Principles
 
 The frontend must:
+
 - use Angular 21
 - use standalone components
 - use Tailwind CSS v4
@@ -98,7 +101,9 @@ The frontend must:
 ```text
 core/
 ```
+
 Application-wide infrasturture:
+
 - auth service
 - route guards
 - HTTP interceptors
@@ -109,7 +114,9 @@ Application-wide infrasturture:
 ```text
 shared/
 ```
+
 Reusable building blocks:
+
 - UI components
 - pipes
 - directives
@@ -119,7 +126,9 @@ Reusable building blocks:
 ```text
 features/
 ```
+
 Business features split by domain:
+
 - auth
 - catalog
 - cart
@@ -132,14 +141,18 @@ Business features split by domain:
 ```text
 layouts/
 ```
+
 Shell layouts:
+
 - storefront layout
 - dashboard layout
 
 ### 4.3 Routing Strategy
+
 Use route-based lazy loading.
 
 Suggested route groups:
+
 - /
 - /products
 - /products/:slug
@@ -162,6 +175,7 @@ Suggested route groups:
 ### 4.4 Frontend State Strategy
 
 Use Angular signals and focused services:
+
 - local component state with signals
 - shared feature state in services
 - no external state library unless a real need emerges
@@ -197,6 +211,7 @@ The back office must be:
 ### 5.1 Backend Principles
 
 The backend must:
+
 - use Express.js 5
 - use TypeScript
 - keep controllers thin
@@ -210,7 +225,9 @@ The backend must:
 ```text
 config/
 ```
+
 Configuration and bootstrapping:
+
 - environment validation
 - database initialization
 - Cloudinary configuration
@@ -219,7 +236,9 @@ Configuration and bootstrapping:
 ```text
 common/
 ```
+
 Shared cross-module utilities:
+
 - response helpers
 - error classes
 - pagination helpers
@@ -229,7 +248,9 @@ Shared cross-module utilities:
 ```text
 middleware/
 ```
+
 Cross-cutting request processing:
+
 - auth middleware
 - role middleware
 - validation middleware
@@ -243,7 +264,9 @@ Cross-cutting request processing:
 ```text
 modules/
 ```
+
 Feature modules grouped by domain:
+
 - auth
 - users
 - addresses
@@ -257,6 +280,7 @@ Feature modules grouped by domain:
 - dashboard
 
 Each module should contain:
+
 - controller
 - service
 - repository or direct Prisma access
@@ -268,6 +292,7 @@ Each module should contain:
 ### 5.3 Request Flow
 
 Typical request lifecycle:
+
 - request enters Express app
 - security middleware runs
 - request logging runs
@@ -284,11 +309,12 @@ Typical request lifecycle:
 Use consistent JSON responses.
 
 Typical success structure:
+
 - success
 - message
 - data
 - pagination if relevant
-Typical error structure:
+  Typical error structure:
 - success
 - message
 - error code
@@ -299,6 +325,7 @@ Typical error structure:
 ### 6.1 Auth Module
 
 Responsibilities:
+
 - register
 - login
 - refresh
@@ -307,13 +334,17 @@ Responsibilities:
 - token issuance and revocation
 
 ### 6.2 User and Address Modules
+
 Responsibilities:
+
 - user profule access where needed
 - address CRUD for customers
 - privileged user management for admins
 
 ### 6.3 Catalog Modules
+
 Responsibilities:
+
 - categories
 - brands
 - products
@@ -322,14 +353,18 @@ Responsibilities:
 - warranty data
 
 ### 6.4 Cart Module
+
 Responsibilities:
+
 - current cart retrieval
 - add/remove/update cart items
 - clear cart
 - stock-aware cart validation
 
 ### 6.5 Order Module
+
 Responsibilities:
+
 - create order
 - order history
 - order detail
@@ -337,7 +372,9 @@ Responsibilities:
 - stock validation and reservation/decrement logic
 
 ### 6.6 Payment Module
+
 Responsibilities:
+
 - COD flow handling
 - PromptPay QR flow
 - payment record handling
@@ -345,7 +382,9 @@ Responsibilities:
 - payment approval/rejection
 
 ### 6.7 Report and Dashboard Modules
+
 Responsibilities:
+
 - daily sales reports
 - admin analytics
 - export Excel
@@ -363,21 +402,25 @@ Responsibilities:
 ### 7.2 Access Token
 
 Contains only required claims such as:
+
 - user id
 - role
 - email if needed
 
 Used for:
+
 - authenticated API calls
 - route authorization context
 
 ### 7.3 Refresh Token
 
 Used to:
+
 - obtain a new access token
 - keep users signed in without repeated login
 
 Must support:
+
 - secure storage
 - server-side invalidation
 - rotation and replay protection strategy
@@ -385,6 +428,7 @@ Must support:
 ### Logout
 
 Logout must:
+
 - invalidate or revoke the refresh token record server-side
 - clear refresh token transport from the client
 - ensure future refresh attempts fail
@@ -394,6 +438,7 @@ Logout must:
 ### 8.1 Upload Use Cases
 
 Uploads are needed for:
+
 - product images
 - brand images or logos of used
 - PromptPay payment slips
@@ -419,6 +464,7 @@ Uploads are needed for:
 ### 9.1 Staff Reports
 
 Staff can access:
+
 - daily sales summary
 - export to Excel
 - export to PDF
@@ -426,6 +472,7 @@ Staff can access:
 ### 9.2 Admin Analytics
 
 Admins can access:
+
 - total revenue summaries
 - order status distribution
 - top-selling products
@@ -444,31 +491,42 @@ Admins can access:
 ### 10.1 Local Development
 
 Use Docker Compose for:
+
 - MySQL
 - optional admin DB UI if needed later
 
 Frontend:
+
 - Angular dev server
 
 Backend:
+
 - Node.js runtime with watch mode
 
 ### 10.2 Production Deployment
 
+Preferred targets: **Vercel** (frontend) and **Railway** (API + MySQL).
+
 Frontend:
+
 - build static Angular assets
-- serve via web server on VPS
+- deploy to Vercel (or any static hosting with rewrite/proxy support)
 
 Backend:
+
 - build TypeScript to JavaScript
-- run with Node.js in a controlled environment
+- deploy to Railway (or any Node.js hosting platform)
 - use environment variables for secrets and config
 
 Database:
-- managed MySQL or production-grade MySQL deploymeny
+
+- Railway-managed MySQL or any managed MySQL provider
 
 Images:
+
 - Cloudinary
+
+A self-hosted Docker Compose stack is available in `docker/` as an optional fallback.
 
 ### 10.3 Configuration Strategy
 
@@ -487,6 +545,7 @@ The backend must fail fast on invalid or missing required configuration.
 ## 12. Architecture Decisions to Preserve
 
 The following decisions should remain stable unless a strong reason appears:
+
 - repository split into apps/web and apps/api
 - Angular standalone architecture
 - Express module-based backend structure

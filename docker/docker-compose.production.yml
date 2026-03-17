@@ -1,3 +1,7 @@
+# Optional self-hosted Docker production stack.
+# The primary deployment targets are Vercel (frontend) and Railway (API + MySQL).
+# Run from repo root: docker compose -f docker/docker-compose.production.yml up -d --build
+
 services:
   mysql:
     image: mysql:8.0
@@ -17,7 +21,8 @@ services:
 
   migrate:
     build:
-      context: ./apps/api
+      context: ../apps/api
+      dockerfile: ../docker/api.Dockerfile
       target: build
     depends_on:
       mysql:
@@ -29,7 +34,8 @@ services:
 
   api:
     build:
-      context: ./apps/api
+      context: ../apps/api
+      dockerfile: ../docker/api.Dockerfile
     restart: unless-stopped
     depends_on:
       migrate:
@@ -52,8 +58,8 @@ services:
 
   web:
     build:
-      context: .
-      dockerfile: apps/web/Dockerfile
+      context: ..
+      dockerfile: docker/web.Dockerfile
     restart: unless-stopped
     depends_on:
       - api

@@ -4,20 +4,20 @@ E-commerce web application for selling computer hardware. Built with Angular, Ex
 
 ## Tech Stack
 
-| Layer | Technology |
-|-------|------------|
-| Frontend | Angular 21, Tailwind CSS v4, TypeScript |
-| Backend | Express.js 5, TypeScript |
-| Database | MySQL 8.0 |
-| ORM | Prisma ORM v7 |
-| Image Storage | Cloudinary |
-| Auth | JWT (access + refresh tokens) |
+| Layer         | Technology                              |
+| ------------- | --------------------------------------- |
+| Frontend      | Angular 21, Tailwind CSS v4, TypeScript |
+| Backend       | Express.js 5, TypeScript                |
+| Database      | MySQL 8.0                               |
+| ORM           | Prisma ORM v7                           |
+| Image Storage | Cloudinary                              |
+| Auth          | JWT (access + refresh tokens)           |
 
 ## Prerequisites
 
 - Node.js 24+
-- Docker and Docker Compose (for MySQL or full-stack deployment)
 - npm
+- Docker and Docker Compose (optional — for local MySQL)
 
 ## Getting Started
 
@@ -90,47 +90,47 @@ pc-hub/
 │       └── src/          # Application source
 ├── docker/
 │   ├── mysql/            # MySQL init scripts
-│   └── nginx/            # nginx config for production
+│   ├── nginx/            # nginx config (Docker-only)
+│   └── docker-compose.production.yml  # Optional self-hosted Docker stack
 ├── docs/                 # Project documentation
-├── docker-compose.yml          # Development (MySQL only)
-└── docker-compose.production.yml  # Full-stack production
+└── docker-compose.yml          # Development (local MySQL only)
 ```
 
 ## Available Scripts
 
 ### Root
 
-| Script | Description |
-|--------|-------------|
-| `npm run dev:api` | Start API dev server with hot reload |
-| `npm run dev:web` | Start Angular dev server |
-| `npm run build:all` | Build both API and Web |
-| `npm run lint:all` | Lint both API and Web |
-| `npm run test:all` | Run all tests |
+| Script              | Description                          |
+| ------------------- | ------------------------------------ |
+| `npm run dev:api`   | Start API dev server with hot reload |
+| `npm run dev:web`   | Start Angular dev server             |
+| `npm run build:all` | Build both API and Web               |
+| `npm run lint:all`  | Lint both API and Web                |
+| `npm run test:all`  | Run all tests                        |
 
 ### API (`apps/api`)
 
-| Script | Description |
-|--------|-------------|
-| `npm run dev` | Start with hot reload (tsx) |
-| `npm run build` | Compile TypeScript |
-| `npm start` | Run compiled server |
-| `npm run lint` | ESLint |
-| `npm run typecheck` | TypeScript type checking |
-| `npm test` | Run tests (Vitest) |
-| `npm run db:generate` | Generate Prisma client |
-| `npm run db:migrate` | Create/apply migrations (dev) |
+| Script                      | Description                   |
+| --------------------------- | ----------------------------- |
+| `npm run dev`               | Start with hot reload (tsx)   |
+| `npm run build`             | Compile TypeScript            |
+| `npm start`                 | Run compiled server           |
+| `npm run lint`              | ESLint                        |
+| `npm run typecheck`         | TypeScript type checking      |
+| `npm test`                  | Run tests (Vitest)            |
+| `npm run db:generate`       | Generate Prisma client        |
+| `npm run db:migrate`        | Create/apply migrations (dev) |
 | `npm run db:migrate:deploy` | Apply migrations (production) |
-| `npm run db:seed` | Seed sample data |
+| `npm run db:seed`           | Seed sample data              |
 
 ### Web (`apps/web`)
 
-| Script | Description |
-|--------|-------------|
-| `npm start` | Start dev server |
-| `npm run build` | Production build |
-| `npm run lint` | ESLint via Angular CLI |
-| `npm test` | Run tests (Vitest via Angular CLI) |
+| Script          | Description                        |
+| --------------- | ---------------------------------- |
+| `npm start`     | Start dev server                   |
+| `npm run build` | Production build                   |
+| `npm run lint`  | ESLint via Angular CLI             |
+| `npm test`      | Run tests (Vitest via Angular CLI) |
 
 ## Database
 
@@ -145,80 +145,95 @@ The project uses Prisma's migration-based workflow:
 
 The seed script (`apps/api/prisma/seed.ts`) creates:
 
-| Entity | Count | Details |
-|--------|-------|---------|
-| Users | 3 | admin@pchub.com / staff@pchub.com / customer@pchub.com |
-| Categories | 6 | CPU, GPU, RAM, Motherboard, Storage, PSU |
-| Brands | 6 | AMD, Intel, NVIDIA, Corsair, Samsung, Seasonic |
-| Products | 12 | 2 per category with realistic specs and prices |
+| Entity     | Count | Details                                                |
+| ---------- | ----- | ------------------------------------------------------ |
+| Users      | 3     | admin@pchub.com / staff@pchub.com / customer@pchub.com |
+| Categories | 6     | CPU, GPU, RAM, Motherboard, Storage, PSU               |
+| Brands     | 6     | AMD, Intel, NVIDIA, Corsair, Samsung, Seasonic         |
+| Products   | 12    | 2 per category with realistic specs and prices         |
 
 Default passwords: `Admin@1234`, `Staff@1234`, `Customer@1234`
 
 The seed is idempotent — safe to run multiple times.
 
-## Docker Production Deployment
+## Deployment
 
-### Build and start all services
+The recommended deployment targets are **Vercel** (frontend) and **Railway** (API + MySQL). The API and frontend are platform-agnostic and do not require Docker in production.
 
-```bash
-# Configure production environment
-cp .env.example .env
-# Edit .env with production values (strong secrets, real Cloudinary keys, etc.)
+### Recommended Architecture
 
-# Build and start
-docker compose -f docker-compose.production.yml up -d --build
+```
+Vercel  ─── serves Angular static build
+             rewrites /api/* → Railway API URL
+
+Railway ─── runs Express API (Node.js)
+             connects to Railway-managed MySQL
 ```
 
-### Services
+### Deploy Frontend to Vercel
 
-| Service | Description | Port |
-|---------|-------------|------|
-| `mysql` | MySQL 8.0 database | Internal only |
-| `migrate` | Runs Prisma migrations then exits | — |
-| `api` | Express.js API server | Internal (3000) |
-| `web` | nginx serving Angular + API proxy | 80 |
+1. Import the repository in Vercel.
+2. Set the **Root Directory** to `apps/web`.
+3. Vercel auto-detects Angular. The build command is `npx ng build` and output is `dist/web/browser`.
+4. Add a rewrite so `/api/:path*` proxies to your Railway API URL. Create `apps/web/vercel.json` or configure in the Vercel dashboard:
 
-### How it works
+```json
+{
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "https://<your-railway-api-url>/api/:path*"
+    }
+  ]
+}
+```
 
-1. `mysql` starts and passes health check
-2. `migrate` runs `prisma migrate deploy` against the database, then exits
-3. `api` starts after migrations complete
-4. `web` serves the Angular app and proxies `/api/` to the API container
+5. The production environment file (`src/environments/environment.ts`) already uses the relative path `/api/v1`, which works with the rewrite above.
 
-### Seed in production
+### Deploy API to Railway
+
+1. Create a new Railway project with a **MySQL** service and a **Node.js** service.
+2. Set the Node.js service **Root Directory** to `apps/api`.
+3. Set the **Build Command** to `npx prisma generate && npm run build`.
+4. Set the **Start Command** to `npx prisma migrate deploy && node dist/server.js`.
+5. Configure environment variables in the Railway dashboard (see [Environment Variables](#environment-variables) below).
+6. Railway provides `DATABASE_URL` automatically for linked MySQL services.
+
+### Seed on Railway
 
 ```bash
-docker compose -f docker-compose.production.yml run --rm api \
-  npx tsx prisma/seed.ts
+# Via Railway CLI
+railway run --service api -- npx tsx prisma/seed.ts
+```
+
+### Self-Hosted Docker (optional)
+
+A Docker Compose production stack is available in `docker/docker-compose.production.yml` for self-hosted or local full-stack testing. See `docker/` for Dockerfiles and nginx config. This is **not** the primary deployment path.
+
+```bash
+docker compose -f docker/docker-compose.production.yml up -d --build
 ```
 
 ## Environment Variables
 
 ### API
 
-| Variable | Required | Default | Description |
-|----------|----------|---------|-------------|
-| `DATABASE_URL` | Yes | — | MySQL connection string (`mysql://user:pass@host:3306/db`) |
-| `PORT` | No | `3000` | API server port |
-| `NODE_ENV` | No | `development` | `development`, `test`, or `production` |
-| `CORS_ORIGIN` | Yes | — | Allowed CORS origin (must not be `*` in production) |
-| `JWT_ACCESS_SECRET` | Yes | — | Access token signing secret (min 32 chars) |
-| `JWT_REFRESH_SECRET` | Yes | — | Refresh token signing secret (min 32 chars) |
-| `JWT_ACCESS_EXPIRES` | No | `15m` | Access token expiry |
-| `JWT_REFRESH_EXPIRES_DAYS` | No | `7` | Refresh token expiry in days |
-| `CLOUDINARY_CLOUD_NAME` | No | — | Cloudinary cloud name |
-| `CLOUDINARY_API_KEY` | No | — | Cloudinary API key |
-| `CLOUDINARY_API_SECRET` | No | — | Cloudinary API secret |
-| `PROMPTPAY_ID` | No | — | PromptPay ID for QR generation |
+These variables are required on any platform (Railway, Docker, or local):
 
-### Docker Compose production
-
-| Variable | Description |
-|----------|-------------|
-| `MYSQL_ROOT_PASSWORD` | MySQL root password |
-| `MYSQL_USER` | MySQL application user |
-| `MYSQL_PASSWORD` | MySQL application password |
-| `MYSQL_DATABASE` | MySQL database name |
+| Variable                   | Required | Default       | Description                                                |
+| -------------------------- | -------- | ------------- | ---------------------------------------------------------- |
+| `DATABASE_URL`             | Yes      | —             | MySQL connection string (`mysql://user:pass@host:3306/db`) |
+| `PORT`                     | No       | `3000`        | API server port (Railway sets this automatically)          |
+| `NODE_ENV`                 | No       | `development` | `development`, `test`, or `production`                     |
+| `CORS_ORIGIN`              | Yes      | —             | Allowed CORS origin (must not be `*` in production)        |
+| `JWT_ACCESS_SECRET`        | Yes      | —             | Access token signing secret (min 32 chars)                 |
+| `JWT_REFRESH_SECRET`       | Yes      | —             | Refresh token signing secret (min 32 chars)                |
+| `JWT_ACCESS_EXPIRES`       | No       | `15m`         | Access token expiry                                        |
+| `JWT_REFRESH_EXPIRES_DAYS` | No       | `7`           | Refresh token expiry in days                               |
+| `CLOUDINARY_CLOUD_NAME`    | No       | —             | Cloudinary cloud name                                      |
+| `CLOUDINARY_API_KEY`       | No       | —             | Cloudinary API key                                         |
+| `CLOUDINARY_API_SECRET`    | No       | —             | Cloudinary API secret                                      |
+| `PROMPTPAY_ID`             | No       | —             | PromptPay ID for QR generation                             |
 
 ## Testing
 
