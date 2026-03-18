@@ -1,90 +1,110 @@
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
   <!-- Header -->
-  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+  <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-2 mb-7">
     <div>
       <h1 class="text-2xl font-bold tracking-tight text-slate-900">{{ pageTitle() }}</h1>
       @if (!loading() && pagination().total > 0) {
         <p class="mt-1 text-sm text-slate-500">
-          Showing {{ (pagination().page - 1) * pagination().limit + 1 }}–{{ pagination().page * pagination().limit > pagination().total ? pagination().total : pagination().page * pagination().limit }} of {{ pagination().total }} products
+          Showing {{ (pagination().page - 1) * pagination().limit + 1 }}–{{ pagination().page * pagination().limit > pagination().total ? pagination().total : pagination().page * pagination().limit }} of <span class="font-medium text-slate-700">{{ pagination().total }}</span> products
         </p>
       }
     </div>
   </div>
 
   <!-- Filters -->
-  <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 sm:p-5 mb-6">
+  <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-5 mb-7">
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3">
       <!-- Search -->
       <div class="lg:col-span-2">
+        <label for="filter-search" class="block text-xs font-medium text-slate-500 mb-1.5">Search</label>
         <div class="relative">
           <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
           </svg>
           <input
+            id="filter-search"
             type="text"
             placeholder="Search products..."
             [ngModel]="searchInput()"
             (ngModelChange)="onSearchInput($event)"
-            class="w-full rounded-lg border border-slate-300 pl-9 pr-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none"
+            class="w-full rounded-xl border border-slate-200 pl-9 pr-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none transition-colors"
           />
         </div>
       </div>
 
       <!-- Category -->
       @if (!presetCategoryId()) {
-        <select
-          [ngModel]="filters().categoryId ?? ''"
-          (ngModelChange)="onCategoryChange($event)"
-          class="rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm text-slate-700 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none"
-        >
-          <option value="">All Categories</option>
-          @for (cat of categories(); track cat.id) {
-            <option [value]="cat.id">{{ cat.name }}</option>
-          }
-        </select>
+        <div>
+          <label for="filter-category" class="block text-xs font-medium text-slate-500 mb-1.5">Category</label>
+          <select
+            id="filter-category"
+            [ngModel]="filters().categoryId ?? ''"
+            (ngModelChange)="onCategoryChange($event)"
+            class="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm text-slate-700 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none transition-colors"
+          >
+            <option value="">All Categories</option>
+            @for (cat of categories(); track cat.id) {
+              <option [value]="cat.id">{{ cat.name }}</option>
+            }
+          </select>
+        </div>
       }
 
       <!-- Brand -->
       @if (!presetBrandId()) {
-        <select
-          [ngModel]="filters().brandId ?? ''"
-          (ngModelChange)="onBrandChange($event)"
-          class="rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm text-slate-700 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none"
-        >
-          <option value="">All Brands</option>
-          @for (brand of brands(); track brand.id) {
-            <option [value]="brand.id">{{ brand.name }}</option>
-          }
-        </select>
+        <div>
+          <label for="filter-brand" class="block text-xs font-medium text-slate-500 mb-1.5">Brand</label>
+          <select
+            id="filter-brand"
+            [ngModel]="filters().brandId ?? ''"
+            (ngModelChange)="onBrandChange($event)"
+            class="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm text-slate-700 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none transition-colors"
+          >
+            <option value="">All Brands</option>
+            @for (brand of brands(); track brand.id) {
+              <option [value]="brand.id">{{ brand.name }}</option>
+            }
+          </select>
+        </div>
       }
 
-      <!-- Price Range -->
-      <input
-        type="number"
-        placeholder="Min Price"
-        [ngModel]="filters().minPrice"
-        (ngModelChange)="onFilterChange('minPrice', $event)"
-        min="0"
-        class="rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none"
-      />
-      <input
-        type="number"
-        placeholder="Max Price"
-        [ngModel]="filters().maxPrice"
-        (ngModelChange)="onFilterChange('maxPrice', $event)"
-        min="0"
-        class="rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none"
-      />
+      <!-- Min Price -->
+      <div>
+        <label for="filter-min-price" class="block text-xs font-medium text-slate-500 mb-1.5">Min Price</label>
+        <input
+          id="filter-min-price"
+          type="number"
+          placeholder="0"
+          [ngModel]="filters().minPrice"
+          (ngModelChange)="onFilterChange('minPrice', $event)"
+          min="0"
+          class="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none transition-colors"
+        />
+      </div>
+
+      <!-- Max Price -->
+      <div>
+        <label for="filter-max-price" class="block text-xs font-medium text-slate-500 mb-1.5">Max Price</label>
+        <input
+          id="filter-max-price"
+          type="number"
+          placeholder="Any"
+          [ngModel]="filters().maxPrice"
+          (ngModelChange)="onFilterChange('maxPrice', $event)"
+          min="0"
+          class="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none transition-colors"
+        />
+      </div>
     </div>
 
-    <div class="flex items-center justify-between mt-4 pt-3 border-t border-slate-100">
+    <div class="flex items-center justify-between mt-4 pt-4 border-t border-slate-100">
       <!-- Sort -->
-      <div class="flex items-center gap-2">
-        <span class="text-xs font-medium text-slate-500">Sort by:</span>
+      <div class="flex items-center gap-2.5">
+        <span class="text-xs font-medium text-slate-500">Sort:</span>
         <select
           [ngModel]="filters().sort"
           (ngModelChange)="onFilterChange('sort', $event)"
-          class="rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-700 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none"
+          class="rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-700 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none transition-colors"
         >
           <option value="newest">Newest</option>
           <option value="oldest">Oldest</option>
@@ -97,8 +117,11 @@
 
       <button
         (click)="onClearFilters()"
-        class="text-sm font-medium text-indigo-600 hover:text-indigo-500 cursor-pointer"
+        class="inline-flex items-center gap-1.5 text-sm font-medium text-indigo-600 hover:text-indigo-500 transition-colors cursor-pointer"
       >
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+        </svg>
         Clear filters
       </button>
     </div>
@@ -108,7 +131,7 @@
   @if (loading()) {
     <app-loading-skeleton variant="card" [count]="8" />
   } @else if (error()) {
-    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-8">
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-8">
       <app-alert-banner type="error" [message]="error()" />
       <div class="text-center mt-4">
         <button
@@ -120,18 +143,18 @@
       </div>
     </div>
   } @else if (notFound()) {
-    <div class="bg-white rounded-xl shadow-sm border border-slate-200">
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-200">
       <app-empty-state
         [title]="notFound()"
         description="The page you're looking for doesn't exist."
       >
-        <a routerLink="/products" class="inline-block mt-4 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-indigo-500 shadow-sm">
+        <a routerLink="/products" class="inline-block mt-4 rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-indigo-500 shadow-sm">
           Browse all products
         </a>
       </app-empty-state>
     </div>
   } @else if (products().length === 0) {
-    <div class="bg-white rounded-xl shadow-sm border border-slate-200">
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-200">
       <app-empty-state
         title="No products found"
         description="Try adjusting your search or filter criteria."
@@ -146,7 +169,7 @@
       </app-empty-state>
     </div>
   } @else {
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
       @for (product of products(); track product.id) {
         <app-product-card [product]="product" />
       }

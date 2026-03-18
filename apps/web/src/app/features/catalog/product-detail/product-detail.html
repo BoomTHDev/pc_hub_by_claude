@@ -1,22 +1,22 @@
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
   @if (loading()) {
     <!-- Loading skeleton -->
-    <div class="animate-pulse">
-      <div class="h-4 bg-slate-200 rounded w-48 mb-6"></div>
+    <div>
+      <div class="h-4 bg-slate-200 rounded-full w-48 mb-6 shimmer"></div>
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
-        <div class="aspect-square bg-slate-200 rounded-xl"></div>
+        <div class="aspect-square bg-slate-200 rounded-2xl shimmer"></div>
         <div class="space-y-4">
-          <div class="h-4 bg-slate-200 rounded w-1/4"></div>
-          <div class="h-8 bg-slate-200 rounded w-3/4"></div>
-          <div class="h-8 bg-slate-200 rounded w-1/3"></div>
-          <div class="h-4 bg-slate-200 rounded w-1/4"></div>
-          <div class="h-12 bg-slate-200 rounded mt-4"></div>
-          <div class="h-32 bg-slate-200 rounded mt-4"></div>
+          <div class="h-4 bg-slate-200 rounded-full w-1/4 shimmer"></div>
+          <div class="h-9 bg-slate-200 rounded-lg w-3/4 shimmer"></div>
+          <div class="h-9 bg-slate-200 rounded-lg w-1/3 shimmer"></div>
+          <div class="h-4 bg-slate-200 rounded-full w-1/4 shimmer"></div>
+          <div class="h-14 bg-slate-200 rounded-xl mt-2 shimmer"></div>
+          <div class="h-32 bg-slate-200 rounded-xl mt-2 shimmer"></div>
         </div>
       </div>
     </div>
   } @else if (notFound()) {
-    <div class="bg-white rounded-xl shadow-sm border border-slate-200">
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-200">
       <app-empty-state
         title="Product Not Found"
         description="The product you're looking for doesn't exist or has been removed."
@@ -28,14 +28,14 @@
         </div>
         <a
           routerLink="/products"
-          class="inline-block mt-4 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-indigo-500 shadow-sm"
+          class="inline-block mt-4 rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-indigo-500 shadow-sm"
         >
           Browse Products
         </a>
       </app-empty-state>
     </div>
   } @else if (error()) {
-    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-8">
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-8">
       <app-alert-banner type="error" [message]="error()" />
       <div class="text-center mt-4">
         <button
@@ -48,20 +48,20 @@
     </div>
   } @else if (product(); as p) {
     <!-- Breadcrumb -->
-    <nav class="flex items-center gap-2 text-sm text-slate-500 mb-6">
-      <a routerLink="/products" class="hover:text-slate-900">Products</a>
-      <svg class="w-4 h-4 text-slate-300" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" /></svg>
-      <a [routerLink]="['/categories', p.category.slug]" class="hover:text-slate-900">
+    <nav class="flex items-center gap-1.5 text-sm text-slate-500 mb-7">
+      <a routerLink="/products" class="hover:text-indigo-600 transition-colors">Products</a>
+      <svg class="w-3.5 h-3.5 text-slate-300 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" /></svg>
+      <a [routerLink]="['/categories', p.category.slug]" class="hover:text-indigo-600 transition-colors">
         {{ p.category.name }}
       </a>
-      <svg class="w-4 h-4 text-slate-300" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" /></svg>
+      <svg class="w-3.5 h-3.5 text-slate-300 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" /></svg>
       <span class="text-slate-900 font-medium truncate">{{ p.name }}</span>
     </nav>
 
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-14">
       <!-- Image Gallery -->
       <div class="lg:sticky lg:top-24 lg:self-start">
-        <div class="aspect-square bg-slate-100 rounded-xl overflow-hidden border border-slate-200 mb-3">
+        <div class="aspect-square bg-slate-50 rounded-2xl overflow-hidden border border-slate-200/80 mb-3 shadow-sm">
           <img
             [src]="selectedImage() ?? '/images/no-image.svg'"
             [alt]="p.name"
@@ -74,10 +74,10 @@
             @for (img of p.images; track img.id) {
               <button
                 (click)="selectImage(img.imageUrl)"
-                class="aspect-square rounded-lg overflow-hidden border-2 cursor-pointer"
+                class="aspect-square rounded-xl overflow-hidden border-2 cursor-pointer transition-all duration-150"
                 [class]="
                   selectedImage() === img.imageUrl
-                    ? 'border-indigo-600 ring-1 ring-indigo-600'
+                    ? 'border-indigo-600 ring-1 ring-indigo-600 shadow-sm'
                     : 'border-slate-200 hover:border-slate-400'
                 "
               >
@@ -95,38 +95,38 @@
       <!-- Product Info -->
       <div>
         <!-- Brand & SKU -->
-        <div class="flex items-center gap-2 text-sm text-slate-500 mb-3">
-          <a [routerLink]="['/brands', p.brand.slug]" class="hover:text-slate-900 font-medium">
+        <div class="flex items-center gap-2 mb-3">
+          <a [routerLink]="['/brands', p.brand.slug]" class="text-sm font-semibold text-indigo-600 hover:text-indigo-700 transition-colors">
             {{ p.brand.name }}
           </a>
-          <span class="text-slate-300">|</span>
-          <span class="font-mono text-xs">SKU: {{ p.sku }}</span>
+          <span class="text-slate-200">|</span>
+          <span class="text-xs font-mono text-slate-400">{{ p.sku }}</span>
         </div>
 
-        <h1 class="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 mb-4">{{ p.name }}</h1>
+        <h1 class="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 leading-snug mb-5">{{ p.name }}</h1>
 
         <!-- Price & Stock block -->
-        <div class="bg-slate-50 rounded-xl p-5 mb-6 border border-slate-100">
-          <p class="text-3xl font-bold text-indigo-600 mb-3">
+        <div class="bg-gradient-to-br from-slate-50 to-indigo-50/40 rounded-2xl p-5 mb-6 border border-slate-200/60">
+          <p class="text-3xl font-bold text-indigo-600 mb-4">
             {{ p.price | thaiBaht }}
           </p>
 
-          <div class="flex items-center gap-4 text-sm">
+          <div class="flex items-center flex-wrap gap-3 text-sm">
             @if (p.stock > 0) {
-              <span class="inline-flex items-center gap-1.5 text-green-700">
-                <span class="w-2 h-2 rounded-full bg-green-500"></span>
+              <span class="inline-flex items-center gap-1.5 bg-emerald-50 text-emerald-700 border border-emerald-100 rounded-full px-3 py-1 text-xs font-medium">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
                 In stock ({{ p.stock }} available)
               </span>
             } @else {
-              <span class="inline-flex items-center gap-1.5 text-red-600">
-                <span class="w-2 h-2 rounded-full bg-red-500"></span>
+              <span class="inline-flex items-center gap-1.5 bg-red-50 text-red-600 border border-red-100 rounded-full px-3 py-1 text-xs font-medium">
+                <span class="w-1.5 h-1.5 rounded-full bg-red-500"></span>
                 Out of stock
               </span>
             }
 
             @if (p.warrantyMonths) {
-              <span class="text-slate-500">
-                <svg class="inline w-4 h-4 mr-0.5 -mt-0.5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75m-3-7.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285Z" /></svg>
+              <span class="inline-flex items-center gap-1.5 bg-slate-100 text-slate-600 border border-slate-200 rounded-full px-3 py-1 text-xs font-medium">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75m-3-7.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285Z" /></svg>
                 {{ p.warrantyMonths }}mo warranty
               </span>
             }
@@ -136,19 +136,19 @@
         <!-- Quantity selector -->
         <div class="flex items-center gap-4 mb-5">
           <span class="text-sm font-medium text-slate-700">Quantity:</span>
-          <div class="inline-flex items-center rounded-lg border border-slate-300 overflow-hidden">
+          <div class="inline-flex items-center rounded-xl border border-slate-200 overflow-hidden shadow-sm">
             <button
               (click)="decrementQty()"
               [disabled]="quantity() <= 1"
-              class="w-10 h-10 flex items-center justify-center text-slate-600 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+              class="w-10 h-10 flex items-center justify-center text-slate-600 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
             >
               −
             </button>
-            <span class="w-12 h-10 flex items-center justify-center text-sm font-semibold text-slate-900 border-x border-slate-300 bg-white">{{ quantity() }}</span>
+            <span class="w-12 h-10 flex items-center justify-center text-sm font-semibold text-slate-900 border-x border-slate-200 bg-white">{{ quantity() }}</span>
             <button
               (click)="incrementQty(p.stock)"
               [disabled]="quantity() >= p.stock"
-              class="w-10 h-10 flex items-center justify-center text-slate-600 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+              class="w-10 h-10 flex items-center justify-center text-slate-600 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
             >
               +
             </button>
@@ -172,7 +172,7 @@
           <button
             (click)="addToCart(p.id)"
             [disabled]="p.stock === 0 || addingToCart()"
-            class="flex-1 rounded-lg bg-indigo-600 px-4 py-3 text-sm font-semibold text-white hover:bg-indigo-500 shadow-sm disabled:bg-slate-300 disabled:cursor-not-allowed cursor-pointer"
+            class="flex-1 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 px-4 py-3 text-sm font-semibold text-white shadow-md shadow-indigo-600/20 hover:from-indigo-500 hover:to-violet-500 disabled:from-slate-300 disabled:to-slate-300 disabled:shadow-none disabled:cursor-not-allowed cursor-pointer transition-all duration-200"
           >
             @if (addingToCart()) {
               Adding...
@@ -183,7 +183,7 @@
           <button
             (click)="buyNow(p.id)"
             [disabled]="p.stock === 0"
-            class="flex-1 rounded-lg border border-indigo-600 px-4 py-3 text-sm font-semibold text-indigo-600 hover:bg-indigo-50 disabled:border-slate-300 disabled:text-slate-400 disabled:cursor-not-allowed cursor-pointer"
+            class="flex-1 rounded-xl border-2 border-indigo-600 px-4 py-3 text-sm font-semibold text-indigo-600 hover:bg-indigo-50 disabled:border-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed cursor-pointer transition-all duration-200"
           >
             Buy Now
           </button>
@@ -191,29 +191,29 @@
 
         <!-- Description -->
         <div class="border-t border-slate-200 pt-6">
-          <h2 class="text-lg font-semibold text-slate-900 mb-3">Description</h2>
+          <h2 class="text-base font-semibold text-slate-900 mb-3">Description</h2>
           <div class="text-slate-600 text-sm leading-relaxed whitespace-pre-line">{{ p.description }}</div>
         </div>
 
         <!-- Product details table -->
         <div class="border-t border-slate-200 pt-6 mt-6">
-          <h2 class="text-lg font-semibold text-slate-900 mb-3">Product Details</h2>
-          <dl class="grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
+          <h2 class="text-base font-semibold text-slate-900 mb-4">Product Details</h2>
+          <dl class="grid grid-cols-2 gap-x-6 gap-y-3.5 text-sm">
             <div>
-              <dt class="text-slate-500">Brand</dt>
+              <dt class="text-xs font-medium text-slate-400 uppercase tracking-wider mb-0.5">Brand</dt>
               <dd class="font-medium text-slate-900">{{ p.brand.name }}</dd>
             </div>
             <div>
-              <dt class="text-slate-500">Category</dt>
+              <dt class="text-xs font-medium text-slate-400 uppercase tracking-wider mb-0.5">Category</dt>
               <dd class="font-medium text-slate-900">{{ p.category.name }}</dd>
             </div>
             <div>
-              <dt class="text-slate-500">SKU</dt>
-              <dd class="font-mono text-slate-900">{{ p.sku }}</dd>
+              <dt class="text-xs font-medium text-slate-400 uppercase tracking-wider mb-0.5">SKU</dt>
+              <dd class="font-mono text-slate-900 text-xs">{{ p.sku }}</dd>
             </div>
             @if (p.warrantyMonths) {
               <div>
-                <dt class="text-slate-500">Warranty</dt>
+                <dt class="text-xs font-medium text-slate-400 uppercase tracking-wider mb-0.5">Warranty</dt>
                 <dd class="font-medium text-slate-900">{{ p.warrantyMonths }} months</dd>
               </div>
             }
