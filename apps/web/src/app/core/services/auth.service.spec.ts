@@ -36,16 +36,9 @@ const MOCK_ME_RESPONSE: MeResponse = {
 describe('AuthService', () => {
   let service: AuthService;
   let httpTesting: HttpTestingController;
-  let setItemSpy: ReturnType<typeof vi.spyOn>;
-  let removeItemSpy: ReturnType<typeof vi.spyOn>;
 
-  beforeEach(() => {
-    // Clear localStorage and set up spies
-    localStorage.clear();
-
-    vi.spyOn(Storage.prototype, 'getItem').mockReturnValue(null);
-    setItemSpy = vi.spyOn(Storage.prototype, 'setItem');
-    removeItemSpy = vi.spyOn(Storage.prototype, 'removeItem');
+  beforeEach(async () => {
+    sessionStorage.clear();
 
     TestBed.configureTestingModule({
       providers: [provideRouter([]), provideHttpClient(), provideHttpClientTesting()],
@@ -54,17 +47,22 @@ describe('AuthService', () => {
     service = TestBed.inject(AuthService);
     httpTesting = TestBed.inject(HttpTestingController);
 
-    // The constructor calls restoreToken which reads from localStorage.
-    // Since getItem returns null, no fetchMe call is made.
+    // The constructor calls restoreSession via queueMicrotask — flush the microtask queue
+    await Promise.resolve();
+
+    // Fail the startup refresh so the service starts in a clean logged-out state
+    const restoreReq = httpTesting.match((r) => r.url.includes('/auth/refresh'));
+    for (const req of restoreReq) {
+      req.flush({ message: 'No refresh token' }, { status: 401, statusText: 'Unauthorized' });
+    }
   });
 
   afterEach(() => {
     httpTesting.verify();
-    vi.restoreAllMocks();
   });
 
   describe('login', () => {
-    it('sends POST, stores token in signal and localStorage, sets user', () => {
+    it('sends POST, stores token in memory signal, sets user', () => {
       service.login({ email: 'test@test.com', password: 'pw' }).subscribe();
 
       const req = httpTesting.expectOne(
@@ -76,12 +74,11 @@ describe('AuthService', () => {
       expect(service.getAccessToken()).toBe('mock-access-token');
       expect(service.user()).toEqual(MOCK_USER);
       expect(service.isAuthenticated()).toBe(true);
-      expect(setItemSpy).toHaveBeenCalledWith('access_token', 'mock-access-token');
     });
   });
 
   describe('register', () => {
-    it('sends POST, stores token in signal and localStorage, sets user', () => {
+    it('sends POST, stores token in memory signal, sets user', () => {
       service
         .register({
           firstName: 'T',
@@ -100,27 +97,30 @@ describe('AuthService', () => {
 
       expect(service.getAccessToken()).toBe('mock-access-token');
       expect(service.user()).toEqual(MOCK_USER);
-      expect(setItemSpy).toHaveBeenCalledWith('access_token', 'mock-access-token');
     });
   });
 
   describe('refresh', () => {
-    it('sends POST with credentials, updates accessToken in signal and localStorage', () => {
+    it('sends POST with credentials, updates accessToken and fetches user profile', () => {
       service.refresh().subscribe();
 
-      const req = httpTesting.expectOne(
+      const refreshReq = httpTesting.expectOne(
         (r) => r.url.includes('/auth/refresh') && r.method === 'POST',
       );
-      expect(req.request.withCredentials).toBe(true);
-      req.flush(MOCK_REFRESH_RESPONSE);
+      expect(refreshReq.request.withCredentials).toBe(true);
+      refreshReq.flush(MOCK_REFRESH_RESPONSE);
+
+      // refresh() chains fetchMe()
+      const meReq = httpTesting.expectOne((r) => r.url.includes('/auth/me'));
+      meReq.flush(MOCK_ME_RESPONSE);
 
       expect(service.getAccessToken()).toBe('refreshed-access-token');
-      expect(setItemSpy).toHaveBeenCalledWith('access_token', 'refreshed-access-token');
+      expect(service.user()).toEqual(MOCK_USER);
     });
   });
 
   describe('logout', () => {
-    it('sends POST, clears session signal and localStorage', () => {
+    it('sends POST and clears session', () => {
       // First login to have state
       service.login({ email: 'test@test.com', password: 'pw' }).subscribe();
       const loginReq = httpTesting.expectOne((r) => r.url.includes('/auth/login'));
@@ -136,7 +136,6 @@ describe('AuthService', () => {
       expect(service.getAccessToken()).toBeNull();
       expect(service.user()).toBeNull();
       expect(service.isAuthenticated()).toBe(false);
-      expect(removeItemSpy).toHaveBeenCalledWith('access_token');
     });
   });
 
@@ -180,16 +179,9 @@ describe('AuthService', () => {
     });
   });
 
-  describe('restoreToken (constructor behavior)', () => {
-    it('reads token from localStorage on construction and calls fetchMe', async () => {
-      vi.restoreAllMocks();
-
-      // Pre-seed localStorage
-      vi.spyOn(Storage.prototype, 'getItem').mockReturnValue('stored-token');
-      vi.spyOn(Storage.prototype, 'setItem');
-      vi.spyOn(Storage.prototype, 'removeItem');
-
-      // Reset TestBed to trigger new constructor
+  describe('restoreSession (constructor behavior)', () => {
+    it('restores session via refresh endpoint when sessionStorage is empty (new tab)', async () => {
+      sessionStorage.clear();
       TestBed.resetTestingModule();
       TestBed.configureTestingModule({
         providers: [provideRouter([]), provideHttpClient(), provideHttpClientTesting()],
@@ -198,24 +190,108 @@ describe('AuthService', () => {
       const freshService = TestBed.inject(AuthService);
       const freshHttp = TestBed.inject(HttpTestingController);
 
-      // fetchMe is deferred via queueMicrotask — flush the microtask queue
+      expect(freshService.restoring()).toBe(true);
       await Promise.resolve();
 
-      // Constructor should have called fetchMe
+      // Path B: no sessionStorage token → calls POST /auth/refresh
+      const refreshReq = freshHttp.expectOne((r) => r.url.includes('/auth/refresh'));
+      expect(refreshReq.request.method).toBe('POST');
+      expect(refreshReq.request.withCredentials).toBe(true);
+      refreshReq.flush(MOCK_REFRESH_RESPONSE);
+
       const meReq = freshHttp.expectOne((r) => r.url.includes('/auth/me'));
-      expect(meReq.request.method).toBe('GET');
       meReq.flush(MOCK_ME_RESPONSE);
 
-      expect(freshService.getAccessToken()).toBe('stored-token');
+      expect(freshService.getAccessToken()).toBe('refreshed-access-token');
       expect(freshService.user()).toEqual(MOCK_USER);
+      expect(freshService.isAuthenticated()).toBe(true);
+      expect(freshService.restoring()).toBe(false);
 
       freshHttp.verify();
     });
 
-    it('does not call fetchMe when localStorage is empty', () => {
-      // Service was already created in beforeEach with getItem returning null
-      // No fetchMe request should have been made
-      httpTesting.expectNone((r) => r.url.includes('/auth/me'));
+    it('restores session from sessionStorage without calling refresh (page reload)', async () => {
+      // Simulate a page reload: token already in sessionStorage
+      sessionStorage.setItem('pc_hub_at', 'cached-token');
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({
+        providers: [provideRouter([]), provideHttpClient(), provideHttpClientTesting()],
+      });
+
+      const freshService = TestBed.inject(AuthService);
+      const freshHttp = TestBed.inject(HttpTestingController);
+
+      await Promise.resolve();
+
+      // Path A: sessionStorage has token → calls GET /auth/me only, no POST /auth/refresh
+      freshHttp.expectNone((r) => r.url.includes('/auth/refresh'));
+      const meReq = freshHttp.expectOne((r) => r.url.includes('/auth/me'));
+      meReq.flush(MOCK_ME_RESPONSE);
+
+      expect(freshService.getAccessToken()).toBe('cached-token');
+      expect(freshService.user()).toEqual(MOCK_USER);
+      expect(freshService.isAuthenticated()).toBe(true);
+      expect(freshService.restoring()).toBe(false);
+
+      freshHttp.verify();
+      sessionStorage.clear();
+    });
+
+    it('clears session when sessionStorage token is invalid (expired)', async () => {
+      sessionStorage.setItem('pc_hub_at', 'expired-token');
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({
+        providers: [provideRouter([]), provideHttpClient(), provideHttpClientTesting()],
+      });
+
+      const freshService = TestBed.inject(AuthService);
+      const freshHttp = TestBed.inject(HttpTestingController);
+
+      await Promise.resolve();
+
+      // fetchMe fails → session cleared
+      const meReq = freshHttp.expectOne((r) => r.url.includes('/auth/me'));
+      meReq.flush({ message: 'Unauthorized' }, { status: 401, statusText: 'Unauthorized' });
+
+      expect(freshService.getAccessToken()).toBeNull();
+      expect(freshService.isAuthenticated()).toBe(false);
+      expect(sessionStorage.getItem('pc_hub_at')).toBeNull();
+      expect(freshService.restoring()).toBe(false);
+
+      freshHttp.verify();
+    });
+
+    it('leaves user logged out when refresh fails', async () => {
+      sessionStorage.clear();
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({
+        providers: [provideRouter([]), provideHttpClient(), provideHttpClientTesting()],
+      });
+
+      const freshService = TestBed.inject(AuthService);
+      const freshHttp = TestBed.inject(HttpTestingController);
+
+      await Promise.resolve();
+
+      const refreshReq = freshHttp.expectOne((r) => r.url.includes('/auth/refresh'));
+      refreshReq.flush({ message: 'No refresh token' }, { status: 401, statusText: 'Unauthorized' });
+
+      expect(freshService.getAccessToken()).toBeNull();
+      expect(freshService.user()).toBeNull();
+      expect(freshService.isAuthenticated()).toBe(false);
+      expect(freshService.restoring()).toBe(false);
+
+      freshHttp.verify();
+    });
+
+    it('stores token in sessionStorage, not localStorage', () => {
+      service.login({ email: 'test@test.com', password: 'pw' }).subscribe();
+      const req = httpTesting.expectOne((r) => r.url.includes('/auth/login'));
+      req.flush(MOCK_AUTH_RESPONSE);
+
+      expect(sessionStorage.getItem('pc_hub_at')).toBe('mock-access-token');
+      expect(localStorage.getItem('pc_hub_at')).toBeNull();
+      sessionStorage.clear();
     });
   });
 });

@@ -44,7 +44,7 @@ describe('DashboardPage', () => {
     httpTesting.verify();
   });
 
-  it('admin fetches analytics and not daily sales', () => {
+  it('admin fetches analytics, revenue trend, and top products', () => {
     TestBed.configureTestingModule({
       imports: [DashboardPage],
       providers: [
@@ -59,13 +59,21 @@ describe('DashboardPage', () => {
     const fixture = TestBed.createComponent(DashboardPage);
     fixture.detectChanges();
 
-    // Admin should request analytics summary
-    const analyticsReq = httpTesting.expectOne((r) => r.url.includes('/backoffice/analytics/summary'));
-    expect(analyticsReq.request.method).toBe('GET');
-    analyticsReq.flush({
+    // Admin should request all 5 analytics endpoints via forkJoin
+    const summaryReq = httpTesting.expectOne((r) => r.url.includes('/backoffice/analytics/summary'));
+    const trendReq = httpTesting.expectOne((r) => r.url.includes('/backoffice/analytics/revenue-trend'));
+    const topReq = httpTesting.expectOne((r) => r.url.includes('/backoffice/analytics/top-products'));
+    const lowStockReq = httpTesting.expectOne((r) => r.url.includes('/backoffice/analytics/low-stock'));
+    const recentOrdersReq = httpTesting.expectOne((r) => r.url.includes('/backoffice/analytics/recent-orders'));
+
+    summaryReq.flush({
       success: true,
       data: { totalRevenue: 50000, totalOrders: 20, pendingReviewCount: 2, ordersByStatus: [], totalCustomers: 10, totalProducts: 50 },
     });
+    trendReq.flush({ success: true, data: [] });
+    topReq.flush({ success: true, data: [] });
+    lowStockReq.flush({ success: true, data: [] });
+    recentOrdersReq.flush({ success: true, data: [] });
 
     // Should NOT request daily sales
     httpTesting.expectNone((r) => r.url.includes('/backoffice/reports/daily-sales'));

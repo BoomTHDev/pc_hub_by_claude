@@ -7,12 +7,19 @@ describe('CatalogService', () => {
   let service: CatalogService;
   let httpTesting: HttpTestingController;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     TestBed.configureTestingModule({
       providers: [provideHttpClient(), provideHttpClientTesting()],
     });
     service = TestBed.inject(CatalogService);
     httpTesting = TestBed.inject(HttpTestingController);
+
+    // Flush the startup restoreSession refresh request from AuthService
+    await Promise.resolve();
+    const startupReqs = httpTesting.match((r) => r.url.includes('/auth/refresh'));
+    for (const req of startupReqs) {
+      req.flush({ message: 'No token' }, { status: 401, statusText: 'Unauthorized' });
+    }
   });
 
   afterEach(() => {

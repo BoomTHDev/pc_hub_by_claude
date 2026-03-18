@@ -11,3 +11,16 @@ export const topProductsQuerySchema = z.object({
 });
 
 export type TopProductsQuery = z.infer<typeof topProductsQuerySchema>;
+
+export const lowStockQuerySchema = z.object({
+  threshold: z.coerce.number().int().min(0).max(100).default(10),
+  limit: z.coerce.number().int().min(1).max(50).default(5),
+});
+
+export type LowStockQuery = z.infer<typeof lowStockQuerySchema>;
+
+export const recentOrdersQuerySchema = z.object({
+  limit: z.coerce.number().int().min(1).max(20).default(5),
+});
+
+export type RecentOrdersQuery = z.infer<typeof recentOrdersQuerySchema>;

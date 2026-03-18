@@ -11,7 +11,7 @@ import {
 
 export const checkoutRouter = Router();
 
-checkoutRouter.use(requireAuth, requireRole('CUSTOMER'));
+checkoutRouter.use(requireAuth, requireRole('CUSTOMER', 'STAFF', 'ADMIN'));
 
 checkoutRouter.post(
   '/cart',

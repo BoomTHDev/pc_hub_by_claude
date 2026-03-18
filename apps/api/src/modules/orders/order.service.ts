@@ -6,8 +6,6 @@ import { ensureCloudinaryConfigured, uploadImage } from '../../config/cloudinary
 import { logAction } from '../audit/audit.service.js';
 import type { OrderListQuery } from './order.schema.js';
 import type { OrderStatus, PaymentMethod } from '../../generated/prisma/client.js';
-import generatePayload from 'promptpay-qr';
-import QRCode from 'qrcode';
 
 interface UploadedFile {
   buffer: Buffer;
@@ -32,7 +30,7 @@ const ALLOWED_TRANSITIONS: Record<string, string[]> = {
 export async function listMyOrders(userId: number, query: OrderListQuery) {
   const where: { userId: number; status?: OrderStatus } = { userId };
   if (query.status) {
-    where.status = query.status as OrderStatus;
+    where.status = query.status;
   }
 
   const [orders, total] = await Promise.all([
@@ -228,11 +226,10 @@ export async function getPromptPayQR(orderId: number, userId: number) {
   }
 
   const amount = Number(order.totalAmount);
-  const payload = generatePayload(promptPayId, { amount });
-  const qrDataUrl = await QRCode.toDataURL(payload, { width: 400, margin: 2 });
+  const qrImageUrl = `https://promptpay.io/${promptPayId}/${amount}.png`;
 
   return {
-    qrDataUrl,
+    qrDataUrl: qrImageUrl,
     amount,
     promptPayId,
     orderNumber: order.orderNumber,
@@ -637,7 +634,7 @@ export async function rejectOrder(orderId: number, staffUserId: number, reason: 
 export async function advanceOrderStatus(orderId: number, newStatus: string, staffUserId: number) {
   const order = await prisma.order.findUnique({
     where: { id: orderId },
-    select: { id: true, status: true },
+    select: { id: true, status: true, paymentMethod: true, payment: { select: { id: true, status: true } } },
   });
 
   if (!order) {
@@ -669,6 +666,14 @@ export async function advanceOrderStatus(orderId: number, newStatus: string, sta
       where: { id: orderId },
       data: { status: newStatus as OrderStatus },
     });
+
+    // COD orders: mark payment as PAID when delivered
+    if (newStatus === 'DELIVERED' && order.paymentMethod === 'COD' && order.payment) {
+      await tx.payment.update({
+        where: { id: order.payment.id },
+        data: { status: 'APPROVED' },
+      });
+    }
 
     await logAction(tx, {
       actorUserId: staffUserId,

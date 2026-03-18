@@ -1,16 +1,16 @@
-<div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-  <div class="flex items-center justify-between mb-7">
+<div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
+  <div class="flex items-center justify-between mb-8 animate-fade-up">
     <div>
-      <h1 class="text-2xl font-bold tracking-tight text-slate-900">My Addresses</h1>
+      <h1 class="text-heading text-2xl sm:text-3xl text-slate-900">My Addresses</h1>
       @if (!loading() && addresses().length > 0) {
-        <p class="mt-1 text-sm text-slate-500">
-          <span class="font-medium text-slate-700">{{ addresses().length }}</span> saved {{ addresses().length === 1 ? 'address' : 'addresses' }}
+        <p class="mt-1.5 text-sm text-slate-500">
+          <span class="font-semibold text-indigo-600">{{ addresses().length }}</span> saved {{ addresses().length === 1 ? 'address' : 'addresses' }}
         </p>
       }
     </div>
     <a
       routerLink="/account/addresses/new"
-      class="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 px-4 py-2.5 text-sm font-semibold text-white shadow-md shadow-indigo-600/20 hover:from-indigo-500 hover:to-violet-500 transition-all duration-200"
+      class="btn-primary rounded-xl px-4 py-2.5 text-sm"
     >
       <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
       Add Address
@@ -36,7 +36,7 @@
       }
     </div>
   } @else if (addresses().length === 0) {
-    <div class="bg-white rounded-2xl shadow-sm border border-slate-200">
+    <div class="bg-white rounded-2xl shadow-md border border-slate-200/60">
       <app-empty-state
         title="No addresses yet"
         description="Add a shipping address to get started with your orders."
@@ -49,7 +49,7 @@
         </div>
         <a
           routerLink="/account/addresses/new"
-          class="inline-flex items-center gap-2 mt-4 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 px-5 py-2.5 text-sm font-semibold text-white shadow-md shadow-indigo-600/20 hover:from-indigo-500 hover:to-violet-500 transition-all duration-200"
+          class="btn-primary rounded-xl px-5 py-2.5 text-sm mt-4 inline-flex"
         >
           Add your first address
         </a>

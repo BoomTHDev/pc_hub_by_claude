@@ -31,6 +31,26 @@ export interface TopProduct {
   totalRevenue: number;
 }
 
+export interface LowStockProduct {
+  id: number;
+  name: string;
+  sku: string;
+  stock: number;
+  price: number;
+  categoryName: string;
+  imageUrl: string | null;
+}
+
+export interface RecentOrder {
+  id: number;
+  orderNumber: string;
+  status: string;
+  totalAmount: number;
+  itemCount: number;
+  createdAt: string;
+  customerName: string;
+}
+
 @Injectable({ providedIn: 'root' })
 export class BackofficeAnalyticsService {
   private readonly http = inject(HttpClient);
@@ -52,6 +72,20 @@ export class BackofficeAnalyticsService {
   getTopProducts(limit = 10) {
     return this.http.get<ApiResponse<TopProduct[]>>(
       `${this.apiUrl}/backoffice/analytics/top-products`,
+      { params: { limit: String(limit) } },
+    );
+  }
+
+  getLowStockProducts(threshold = 10, limit = 5) {
+    return this.http.get<ApiResponse<LowStockProduct[]>>(
+      `${this.apiUrl}/backoffice/analytics/low-stock`,
+      { params: { threshold: String(threshold), limit: String(limit) } },
+    );
+  }
+
+  getRecentOrders(limit = 5) {
+    return this.http.get<ApiResponse<RecentOrder[]>>(
+      `${this.apiUrl}/backoffice/analytics/recent-orders`,
       { params: { limit: String(limit) } },
     );
   }

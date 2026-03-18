@@ -17,7 +17,7 @@ export interface AdminProduct {
   updatedAt: string;
   category: { id: number; name: string; slug: string };
   brand: { id: number; name: string; slug: string };
-  images: { imageUrl: string }[];
+  image: string | null;
 }
 
 export interface AdminProductDetail {
@@ -218,6 +218,15 @@ export class BackofficeCatalogService {
     return this.http.post<ApiResponse<{ isActive: boolean }>>(
       `${this.apiUrl}/backoffice/brands/${brandId}/toggle-active`,
       {},
+    );
+  }
+
+  uploadBrandLogo(brandId: number, file: File) {
+    const formData = new FormData();
+    formData.append('logo', file);
+    return this.http.post<ApiResponse<AdminBrand>>(
+      `${this.apiUrl}/backoffice/brands/${brandId}/logo`,
+      formData,
     );
   }
 }

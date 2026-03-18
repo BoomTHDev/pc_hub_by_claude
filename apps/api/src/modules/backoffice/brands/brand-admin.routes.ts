@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { requireRole } from '../../../middleware/role.js';
+import { imageUpload } from '../../../config/upload.js';
 import * as brandAdminController from './brand-admin.controller.js';
 
 export const brandAdminRouter = Router();
@@ -32,4 +33,11 @@ brandAdminRouter.post(
   '/:brandId/toggle-active',
   requireRole('STAFF', 'ADMIN'),
   brandAdminController.toggleActive,
+);
+
+brandAdminRouter.post(
+  '/:brandId/logo',
+  requireRole('ADMIN'),
+  imageUpload.single('logo'),
+  brandAdminController.uploadLogo,
 );

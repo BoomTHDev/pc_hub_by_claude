@@ -6,7 +6,7 @@ import * as orderController from './order.controller.js';
 
 export const orderRouter = Router();
 
-orderRouter.use(requireAuth, requireRole('CUSTOMER'));
+orderRouter.use(requireAuth, requireRole('CUSTOMER', 'STAFF', 'ADMIN'));
 
 orderRouter.get('/', orderController.listMyOrders);
 orderRouter.get('/:orderId', orderController.getMyOrder);

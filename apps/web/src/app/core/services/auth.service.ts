@@ -1,7 +1,7 @@
 import { Injectable, inject, signal, computed } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { tap, catchError, EMPTY } from 'rxjs';
+import { tap, switchMap, catchError, EMPTY } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import type { User, AuthResponse, MeResponse } from '../../shared/models/user.model';
 import type { ApiResponse } from '../../shared/models/api-response.model';
@@ -26,12 +26,16 @@ export class AuthService {
   private readonly apiUrl = environment.apiUrl;
   private readonly currentUser = signal<User | null>(null);
   private readonly accessToken = signal<string | null>(null);
+  private readonly _restoring = signal(false);
+
+  private static readonly SESSION_TOKEN_KEY = 'pc_hub_at';
 
   readonly user = this.currentUser.asReadonly();
   readonly isAuthenticated = computed(() => this.accessToken() !== null);
+  readonly restoring = this._restoring.asReadonly();
 
   constructor() {
-    this.restoreToken();
+    this.restoreSession();
   }
 
   register(payload: RegisterPayload) {
@@ -57,9 +61,9 @@ export class AuthService {
       >(`${this.apiUrl}/auth/refresh`, {}, { withCredentials: true })
       .pipe(
         tap((res) => {
-          this.accessToken.set(res.data.accessToken);
-          localStorage.setItem('access_token', res.data.accessToken);
+          this.setToken(res.data.accessToken);
         }),
+        switchMap(() => this.fetchMe()),
       );
   }
 
@@ -87,22 +91,60 @@ export class AuthService {
   clearSession() {
     this.currentUser.set(null);
     this.accessToken.set(null);
-    localStorage.removeItem('access_token');
+    try { sessionStorage.removeItem(AuthService.SESSION_TOKEN_KEY); } catch { /* SSR/private browsing */ }
+  }
+
+  private setToken(token: string) {
+    this.accessToken.set(token);
+    try { sessionStorage.setItem(AuthService.SESSION_TOKEN_KEY, token); } catch { /* SSR/private browsing */ }
   }
 
   private handleAuthResponse(res: AuthResponse) {
     this.currentUser.set(res.data.user);
-    this.accessToken.set(res.data.accessToken);
-    localStorage.setItem('access_token', res.data.accessToken);
+    this.setToken(res.data.accessToken);
   }
 
-  private restoreToken() {
-    const token = localStorage.getItem('access_token');
-    if (token) {
-      this.accessToken.set(token);
-      // Defer fetchMe() to the next microtask to break the circular dependency:
-      // constructor → fetchMe → HttpClient → authInterceptor → inject(AuthService)
-      queueMicrotask(() => this.fetchMe().subscribe());
-    }
+  private restoreSession() {
+    // Session restoration strategy:
+    // 1. Check sessionStorage for an access token (survives page refresh within same tab)
+    //    → If found, set it and validate with GET /auth/me (not rate-limited)
+    // 2. If no token in sessionStorage (new tab), call POST /auth/refresh using httpOnly cookie
+    // This avoids hitting the refresh endpoint on every page reload.
+    this._restoring.set(true);
+
+    let cachedToken: string | null = null;
+    try { cachedToken = sessionStorage.getItem(AuthService.SESSION_TOKEN_KEY); } catch { /* SSR/private browsing */ }
+
+    queueMicrotask(() => {
+      if (cachedToken) {
+        // Path A: token in sessionStorage → validate with fetchMe
+        this.accessToken.set(cachedToken);
+        this.fetchMe()
+          .subscribe({
+            complete: () => this._restoring.set(false),
+            error: () => this._restoring.set(false),
+          });
+      } else {
+        // Path B: no cached token → use refresh cookie
+        this.http
+          .post<
+            ApiResponse<{ accessToken: string }>
+          >(`${this.apiUrl}/auth/refresh`, {}, { withCredentials: true })
+          .pipe(
+            tap((res) => {
+              this.setToken(res.data.accessToken);
+            }),
+            switchMap(() => this.fetchMe()),
+            catchError(() => {
+              this.clearSession();
+              return EMPTY;
+            }),
+          )
+          .subscribe({
+            complete: () => this._restoring.set(false),
+            error: () => this._restoring.set(false),
+          });
+      }
+    });
   }
 }

@@ -11,7 +11,7 @@ import {
 
 export const cartRouter = Router();
 
-cartRouter.use(requireAuth, requireRole('CUSTOMER'));
+cartRouter.use(requireAuth, requireRole('CUSTOMER', 'STAFF', 'ADMIN'));
 
 cartRouter.get('/', cartController.getCart);
 

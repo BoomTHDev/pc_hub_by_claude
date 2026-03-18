@@ -97,7 +97,13 @@ export async function listProducts(query: ProductListQuery) {
     where.name = { contains: query.search };
   }
   if (query.categoryId !== undefined) {
-    where.categoryId = query.categoryId;
+    // Include products in this category AND all child categories
+    const childCategories = await prisma.category.findMany({
+      where: { parentId: query.categoryId, isActive: true },
+      select: { id: true },
+    });
+    const categoryIds = [query.categoryId, ...childCategories.map((c) => c.id)];
+    where.categoryId = { in: categoryIds };
   }
   if (query.brandId !== undefined) {
     where.brandId = query.brandId;

@@ -70,6 +70,17 @@ const detailSelect = {
   },
 } satisfies Prisma.ProductSelect;
 
+export async function getProduct(productId: number) {
+  const row = await prisma.product.findUnique({
+    where: { id: productId },
+    select: detailSelect,
+  });
+  if (!row) {
+    throw new NotFoundError('Product not found');
+  }
+  return { ...row, price: Number(row.price) };
+}
+
 export async function listProducts(query: ProductAdminListQuery) {
   const where: Prisma.ProductWhereInput = {};
 

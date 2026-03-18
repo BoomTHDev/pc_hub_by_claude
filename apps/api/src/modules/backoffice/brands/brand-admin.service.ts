@@ -2,6 +2,11 @@ import { prisma } from '../../../config/database.js';
 import { Prisma } from '../../../generated/prisma/client.js';
 import { NotFoundError, ConflictError } from '../../../common/errors.js';
 import { buildPaginationMeta } from '../../../common/pagination.js';
+import {
+  uploadImage,
+  deleteImage,
+  ensureCloudinaryConfigured,
+} from '../../../config/cloudinary.js';
 import { logAction } from '../../audit/audit.service.js';
 import type {
   BrandAdminListQuery,
@@ -18,6 +23,7 @@ const selectFields = {
   isActive: true,
   createdAt: true,
   updatedAt: true,
+  _count: { select: { products: true } },
 } satisfies Prisma.BrandSelect;
 
 export async function listBrands(query: BrandAdminListQuery) {
@@ -166,5 +172,58 @@ export async function toggleActive(brandId: number, actorUserId: number) {
     });
 
     return updated;
+  });
+}
+
+interface UploadedFile {
+  buffer: Buffer;
+  mimetype: string;
+  originalname: string;
+  size: number;
+}
+
+export async function uploadBrandLogo(
+  brandId: number,
+  file: UploadedFile,
+  actorUserId: number,
+) {
+  ensureCloudinaryConfigured();
+
+  const existing = await prisma.brand.findUnique({
+    where: { id: brandId },
+    select: { id: true, logoPublicId: true },
+  });
+  if (!existing) {
+    throw new NotFoundError('Brand not found');
+  }
+
+  const { imageUrl, imagePublicId } = await uploadImage(
+    file.buffer,
+    'pc-hub/brands',
+  );
+
+  // Delete old logo from Cloudinary if exists
+  if (existing.logoPublicId) {
+    await deleteImage(existing.logoPublicId);
+  }
+
+  return await prisma.$transaction(async (tx) => {
+    const brand = await tx.brand.update({
+      where: { id: brandId },
+      data: {
+        logoUrl: imageUrl,
+        logoPublicId: imagePublicId,
+      },
+      select: selectFields,
+    });
+
+    await logAction(tx, {
+      actorUserId,
+      action: 'BRAND_LOGO_UPLOAD',
+      entityType: 'Brand',
+      entityId: brandId,
+    });
+
+    return brand;
   });
 }

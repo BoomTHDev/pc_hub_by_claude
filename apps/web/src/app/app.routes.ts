@@ -248,6 +248,14 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'account/profile',
+        canActivate: [authGuard],
+        loadComponent: () =>
+          import('./features/account/profile/profile-page').then(
+            (m) => m.ProfilePage,
+          ),
+      },
+      {
         path: '**',
         loadComponent: () =>
           import('./features/not-found/not-found').then((m) => m.NotFoundPage),

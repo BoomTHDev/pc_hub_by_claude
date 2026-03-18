@@ -24,6 +24,17 @@ export class BoOrderDetailPage implements OnInit {
   protected readonly errorMsg = signal('');
   protected rejectReason = '';
 
+  protected readonly orderTimeline = [
+    { status: 'PENDING', label: 'Order Placed' },
+    { status: 'PAYMENT_REVIEW', label: 'Payment Review' },
+    { status: 'APPROVED', label: 'Approved' },
+    { status: 'PROCESSING', label: 'Processing' },
+    { status: 'SHIPPED', label: 'Shipped' },
+    { status: 'DELIVERED', label: 'Delivered' },
+  ];
+
+  private readonly statusOrder = ['PENDING', 'AWAITING_PAYMENT', 'PAYMENT_SUBMITTED', 'PAYMENT_REVIEW', 'APPROVED', 'PROCESSING', 'SHIPPED', 'DELIVERED'];
+
   ngOnInit() {
     const id = Number(this.route.snapshot.paramMap.get('orderId'));
     if (!id) return;
@@ -60,6 +71,31 @@ export class BoOrderDetailPage implements OnInit {
 
   protected getProductName(snapshot: Record<string, unknown>): string {
     return typeof snapshot['name'] === 'string' ? snapshot['name'] : 'Unknown Product';
+  }
+
+  protected getProductSku(snapshot: Record<string, unknown>): string {
+    return typeof snapshot['sku'] === 'string' ? snapshot['sku'] : '';
+  }
+
+  protected isTimelineStepDone(stepStatus: string, currentStatus: string): boolean {
+    const stepIdx = this.statusOrder.indexOf(stepStatus);
+    const currentIdx = this.statusOrder.indexOf(currentStatus);
+    if (stepIdx === -1 || currentIdx === -1) return false;
+    return stepIdx < currentIdx;
+  }
+
+  protected isTimelineStepCurrent(stepStatus: string, currentStatus: string): boolean {
+    return stepStatus === currentStatus;
+  }
+
+  protected getTimelineStepClass(stepStatus: string, currentStatus: string): string {
+    if (this.isTimelineStepCurrent(stepStatus, currentStatus)) {
+      return 'bg-indigo-100 text-indigo-700 ring-2 ring-indigo-500/30';
+    }
+    if (this.isTimelineStepDone(stepStatus, currentStatus)) {
+      return 'bg-indigo-100 text-indigo-600';
+    }
+    return 'bg-slate-100 text-slate-400';
   }
 
   onApprove() {

@@ -5,11 +5,12 @@ import {
   HttpHandlerFn,
   HttpRequest,
 } from '@angular/common/http';
-import { catchError, switchMap, throwError } from 'rxjs';
+import { Subject, catchError, filter, switchMap, take, throwError } from 'rxjs';
 import { AuthService } from '../services/auth.service';
 import { Router } from '@angular/router';
 
 let isRefreshing = false;
+const refreshResult$ = new Subject<boolean>();
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const authService = inject(AuthService);
@@ -49,9 +50,17 @@ function handleUnauthorized(
   router: Router,
 ) {
   if (isRefreshing) {
-    authService.clearSession();
-    void router.navigate(['/login']);
-    return throwError(() => new HttpErrorResponse({ status: 401 }));
+    // Queue behind the in-flight refresh instead of failing immediately
+    return refreshResult$.pipe(
+      filter((success) => success !== undefined),
+      take(1),
+      switchMap((success) => {
+        if (success) {
+          return next(addToken(req, authService));
+        }
+        return throwError(() => new HttpErrorResponse({ status: 401 }));
+      }),
+    );
   }
 
   isRefreshing = true;
@@ -59,10 +68,12 @@ function handleUnauthorized(
   return authService.refresh().pipe(
     switchMap(() => {
       isRefreshing = false;
+      refreshResult$.next(true);
       return next(addToken(req, authService));
     }),
     catchError((err) => {
       isRefreshing = false;
+      refreshResult$.next(false);
       authService.clearSession();
       void router.navigate(['/login']);
       return throwError(() => err);

@@ -9,6 +9,7 @@ import {
 import { sendSuccess } from '../../../common/response.js';
 import { sendPaginatedSuccess } from '../../../common/pagination.js';
 import { getAuthUser } from '../../../middleware/auth.js';
+import { AppError } from '../../../common/errors.js';
 
 export async function list(req: Request, res: Response): Promise<void> {
   const query = brandAdminListQuerySchema.parse(req.query);
@@ -50,4 +51,15 @@ export async function toggleActive(req: Request, res: Response): Promise<void> {
 
   const action = result.isActive ? 'activated' : 'deactivated';
   sendSuccess({ res, message: `Brand ${action}`, data: result });
+}
+
+export async function uploadLogo(req: Request, res: Response): Promise<void> {
+  const { brandId } = brandIdParamSchema.parse(req.params);
+
+  if (!req.file) {
+    throw new AppError('Logo image file is required', 400, 'FILE_REQUIRED');
+  }
+
+  const brand = await brandAdminService.uploadBrandLogo(brandId, req.file, getAuthUser(req).userId);
+  sendSuccess({ res, message: 'Brand logo uploaded', data: brand });
 }

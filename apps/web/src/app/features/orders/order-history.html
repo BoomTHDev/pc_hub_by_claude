@@ -1,20 +1,20 @@
-<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-  <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-7">
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
+  <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-8 animate-fade-up">
     <div>
-      <h1 class="text-2xl font-bold tracking-tight text-slate-900">My Orders</h1>
+      <h1 class="text-heading text-2xl sm:text-3xl text-slate-900">My Orders</h1>
       @if (!loading() && pagination(); as p) {
-        <p class="mt-1 text-sm text-slate-500">
-          <span class="font-medium text-slate-700">{{ p.total }}</span> {{ p.total === 1 ? 'order' : 'orders' }} total
+        <p class="mt-1.5 text-sm text-slate-500">
+          <span class="font-semibold text-indigo-600">{{ p.total }}</span> {{ p.total === 1 ? 'order' : 'orders' }} total
         </p>
       }
     </div>
     <div>
-      <label for="status-filter" class="block text-xs font-medium text-slate-500 mb-1.5">Filter by status</label>
+      <label for="status-filter" class="block text-xs font-semibold text-slate-600 mb-2">Filter by status</label>
       <select
         id="status-filter"
         [ngModel]="statusFilter()"
         (ngModelChange)="onFilterChange($event)"
-        class="rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm text-slate-700 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none transition-colors"
+        class="rounded-xl border border-slate-300/80 bg-slate-50/50 px-3.5 py-2.5 text-sm text-slate-700 focus:bg-white focus:border-indigo-500 focus:outline-none transition-all"
       >
         <option value="">All Statuses</option>
         <option value="PENDING">Pending</option>
@@ -49,19 +49,14 @@
       }
     </div>
   } @else if (error()) {
-    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-8">
+    <div class="bg-white rounded-2xl shadow-md border border-slate-200/60 p-10 text-center">
       <app-alert-banner type="error" [message]="error()" />
-      <div class="text-center mt-4">
-        <button
-          (click)="goToPage(1)"
-          class="text-sm font-medium text-indigo-600 hover:text-indigo-500 cursor-pointer"
-        >
-          Retry
-        </button>
+      <div class="mt-5">
+        <button (click)="goToPage(1)" class="btn-secondary rounded-xl px-5 py-2.5 text-sm cursor-pointer">Retry</button>
       </div>
     </div>
   } @else if (orders().length === 0) {
-    <div class="bg-white rounded-2xl shadow-sm border border-slate-200">
+    <div class="bg-white rounded-2xl shadow-md border border-slate-200/60">
       <app-empty-state
         title="No orders found"
         [description]="statusFilter() ? 'No orders match the selected filter.' : 'You haven\u0027t placed any orders yet.'"
@@ -73,7 +68,7 @@
         </div>
         <a
           routerLink="/products"
-          class="inline-flex items-center gap-2 mt-4 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 px-5 py-2.5 text-sm font-semibold text-white shadow-md shadow-indigo-600/20 hover:from-indigo-500 hover:to-violet-500 transition-all duration-200"
+          class="btn-primary rounded-xl px-5 py-2.5 text-sm mt-4 inline-flex"
         >
           Start Shopping
           <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" /></svg>
@@ -85,7 +80,7 @@
       @for (order of orders(); track order.id) {
         <a
           [routerLink]="['/account/orders', order.id]"
-          class="group block bg-white rounded-2xl shadow-sm border border-slate-200/80 p-5 hover:border-indigo-200 hover:shadow-md transition-all duration-200"
+          class="group block bg-white rounded-2xl shadow-sm border border-slate-200/60 p-5 hover:border-indigo-200/50 hover:shadow-lg hover:shadow-indigo-100/30 hover:-translate-y-0.5 transition-all duration-300"
         >
           <div class="flex items-start justify-between gap-4">
             <div class="min-w-0">
@@ -102,7 +97,7 @@
               </div>
             </div>
             <div class="flex items-center gap-3 shrink-0">
-              <p class="text-lg font-bold text-indigo-600">{{ order.totalAmount | thaiBaht }}</p>
+              <p class="text-lg font-extrabold text-slate-900">{{ order.totalAmount | thaiBaht }}</p>
               <svg
                 class="w-4 h-4 text-slate-300 group-hover:text-indigo-400 group-hover:translate-x-0.5 transition-all duration-200 shrink-0"
                 fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"

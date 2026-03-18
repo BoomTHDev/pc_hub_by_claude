@@ -25,6 +25,13 @@ export async function list(req: Request, res: Response): Promise<void> {
   });
 }
 
+export async function get(req: Request, res: Response): Promise<void> {
+  const { productId } = productIdParamSchema.parse(req.params);
+  const product = await productAdminService.getProduct(productId);
+
+  sendSuccess({ res, message: 'Product retrieved', data: product });
+}
+
 export async function create(req: Request, res: Response): Promise<void> {
   const body = createProductBodySchema.parse(req.body);
   const product = await productAdminService.createProduct(body, getAuthUser(req).userId);

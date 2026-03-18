@@ -1,12 +1,26 @@
-<div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-  <!-- Breadcrumb -->
-  <nav class="flex items-center gap-1.5 text-sm text-slate-500 mb-7">
-    <a routerLink="/cart" class="hover:text-indigo-600 transition-colors">Cart</a>
-    <svg class="w-3.5 h-3.5 text-slate-300 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" /></svg>
-    <span class="text-slate-900 font-medium">Checkout</span>
-  </nav>
+<div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
+  <!-- Header -->
+  <h1 class="text-heading text-2xl sm:text-3xl text-slate-900 mb-6 animate-fade-up">Checkout</h1>
 
-  <h1 class="text-2xl font-bold tracking-tight text-slate-900 mb-7">Checkout</h1>
+  <!-- Step progress -->
+  <div class="flex items-center justify-center gap-3 mb-8 animate-fade-up" style="animation-delay: 60ms;">
+    <div class="flex items-center gap-2">
+      <span class="w-7 h-7 rounded-full bg-emerald-500 text-white text-xs font-bold flex items-center justify-center shadow-sm">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5" /></svg>
+      </span>
+      <span class="text-xs font-medium text-emerald-600">Cart</span>
+    </div>
+    <div class="w-10 h-px bg-indigo-300"></div>
+    <div class="flex items-center gap-2">
+      <span class="w-7 h-7 rounded-full bg-indigo-600 text-white text-xs font-bold flex items-center justify-center shadow-md shadow-indigo-600/20">2</span>
+      <span class="text-xs font-semibold text-indigo-600">Checkout</span>
+    </div>
+    <div class="w-10 h-px bg-slate-300"></div>
+    <div class="flex items-center gap-2">
+      <span class="w-7 h-7 rounded-full bg-slate-200 text-slate-500 text-xs font-bold flex items-center justify-center">3</span>
+      <span class="text-xs font-medium text-slate-400">Confirm</span>
+    </div>
+  </div>
 
   @if (loading()) {
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -33,10 +47,10 @@
       </div>
     </div>
   } @else if (loadError()) {
-    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-8">
+    <div class="bg-white rounded-2xl shadow-md border border-slate-200/60 p-10 text-center">
       <app-alert-banner type="error" [message]="loadError()" />
-      <div class="text-center mt-4">
-        <a routerLink="/products" class="text-sm font-medium text-indigo-600 hover:text-indigo-500">
+      <div class="mt-5">
+        <a routerLink="/products" class="btn-secondary rounded-xl px-5 py-2.5 text-sm inline-flex">
           Back to Products
         </a>
       </div>
@@ -46,7 +60,7 @@
       <!-- Left column: Form sections -->
       <div class="lg:col-span-2 space-y-5">
         <!-- 1. Shipping Address -->
-        <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-6">
+        <div class="bg-white rounded-2xl shadow-md shadow-slate-200/30 border border-slate-200/60 p-6">
           <div class="flex items-center gap-3 mb-5">
             <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-gradient-to-br from-indigo-600 to-violet-600 text-white text-xs font-bold shadow-sm">1</span>
             <h2 class="text-base font-semibold text-slate-900">Shipping Address</h2>
@@ -107,7 +121,7 @@
         </div>
 
         <!-- 2. Payment Method -->
-        <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-6">
+        <div class="bg-white rounded-2xl shadow-md shadow-slate-200/30 border border-slate-200/60 p-6">
           <div class="flex items-center gap-3 mb-5">
             <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-gradient-to-br from-indigo-600 to-violet-600 text-white text-xs font-bold shadow-sm">2</span>
             <h2 class="text-base font-semibold text-slate-900">Payment Method</h2>
@@ -166,7 +180,7 @@
         </div>
 
         <!-- 3. Order Note -->
-        <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-6">
+        <div class="bg-white rounded-2xl shadow-md shadow-slate-200/30 border border-slate-200/60 p-6">
           <div class="flex items-center gap-3 mb-4">
             <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-gradient-to-br from-indigo-600 to-violet-600 text-white text-xs font-bold shadow-sm">3</span>
             <h2 class="text-base font-semibold text-slate-900">Order Note</h2>
@@ -177,7 +191,7 @@
             maxlength="500"
             rows="3"
             placeholder="Add a note for your order (e.g. delivery instructions)..."
-            class="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none transition-colors resize-none"
+            class="w-full rounded-xl border border-slate-300/80 bg-slate-50/50 px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-indigo-500 focus:outline-none transition-all resize-none"
           ></textarea>
         </div>
 
@@ -204,9 +218,10 @@
 
       <!-- Right column: Order Summary (sticky) -->
       <div class="lg:sticky lg:top-24 lg:self-start">
-        <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 overflow-hidden">
+        <div class="bg-white rounded-2xl shadow-md shadow-slate-200/50 border border-slate-200/60 overflow-hidden">
+          <div class="h-1 bg-gradient-to-r from-indigo-500 via-violet-500 to-indigo-500"></div>
           <div class="p-6">
-            <h2 class="text-base font-semibold text-slate-900 mb-4">Order Summary</h2>
+            <h2 class="text-subheading text-base text-slate-900 mb-4">Order Summary</h2>
 
             <div class="space-y-3 max-h-64 overflow-y-auto">
               @for (item of checkoutItems(); track item.name) {
@@ -242,13 +257,13 @@
 
             <div class="border-t border-slate-200 pt-4 flex justify-between items-center mb-5">
               <span class="text-base font-semibold text-slate-900">Total</span>
-              <span class="text-2xl font-bold text-indigo-600">{{ subtotal() | thaiBaht }}</span>
+              <span class="text-2xl font-extrabold text-slate-900">{{ subtotal() | thaiBaht }}</span>
             </div>
 
             <button
               (click)="placeOrder()"
               [disabled]="submitting() || !canSubmit()"
-              class="w-full rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 px-4 py-3.5 text-sm font-semibold text-white shadow-md shadow-indigo-600/20 hover:from-indigo-500 hover:to-violet-500 disabled:from-slate-300 disabled:to-slate-300 disabled:shadow-none disabled:cursor-not-allowed cursor-pointer transition-all duration-200"
+              class="w-full btn-primary rounded-xl px-4 py-3.5 text-sm shadow-lg shadow-indigo-600/20 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none cursor-pointer"
             >
               @if (submitting()) {
                 <span class="inline-flex items-center gap-2">

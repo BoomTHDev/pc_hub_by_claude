@@ -88,6 +88,7 @@ pc-hub/
 │   │   └── tests/        # API integration tests
 │   └── web/              # Angular frontend
 │       └── src/          # Application source
+├── e2e/                  # Playwright end-to-end tests
 ├── docker/
 │   ├── mysql/            # MySQL init scripts
 │   ├── nginx/            # nginx config (Docker-only)
@@ -100,13 +101,15 @@ pc-hub/
 
 ### Root
 
-| Script              | Description                          |
-| ------------------- | ------------------------------------ |
-| `npm run dev:api`   | Start API dev server with hot reload |
-| `npm run dev:web`   | Start Angular dev server             |
-| `npm run build:all` | Build both API and Web               |
-| `npm run lint:all`  | Lint both API and Web                |
-| `npm run test:all`  | Run all tests                        |
+| Script                  | Description                              |
+| ----------------------- | ---------------------------------------- |
+| `npm run dev:api`       | Start API dev server with hot reload     |
+| `npm run dev:web`       | Start Angular dev server                 |
+| `npm run build:all`     | Build both API and Web                   |
+| `npm run lint:all`      | Lint both API and Web                    |
+| `npm run test:all`      | Run all unit/integration tests           |
+| `npm run test:e2e`      | Run Playwright E2E tests                 |
+| `npm run test:e2e:headed` | Run E2E tests in headed browser mode   |
 
 ### API (`apps/api`)
 
@@ -243,16 +246,20 @@ cd apps/api && npm test
 
 # Web tests (Vitest via Angular CLI)
 cd apps/web && npx ng test --watch=false
+
+# E2E tests (Playwright — starts dev servers automatically)
+cd e2e && npm test
 ```
 
-Tests require a running MySQL instance. The API test suite uses `NODE_ENV=test` which disables rate limiting.
+API and E2E tests require a running MySQL instance. The API test suite uses `NODE_ENV=test` which disables rate limiting. The E2E suite uses Playwright with Chromium and runs against seeded data.
 
 ## CI
 
-GitHub Actions runs on push to `main` and on pull requests. Two parallel jobs:
+GitHub Actions runs on push to `main` and on pull requests. Three jobs:
 
 - **API:** lint, typecheck, build, and test against MySQL 8.0
 - **Web:** lint, build, and test
+- **E2E:** runs after API and Web pass; seeds the database, starts both servers, runs Playwright tests, and uploads the HTML report as a CI artifact
 
 See `.github/workflows/ci.yml`.
 

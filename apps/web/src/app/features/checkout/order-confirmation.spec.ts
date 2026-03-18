@@ -52,7 +52,7 @@ describe('OrderConfirmationPage', () => {
     fixture.detectChanges();
 
     const el = fixture.nativeElement as HTMLElement;
-    expect(el.textContent).toContain('Order Placed!');
+    expect(el.textContent).toContain('Order Placed Successfully!');
     expect(el.textContent).toContain('PCH-20240101-XXXX');
     expect(el.textContent).toContain('Cash on Delivery');
   });

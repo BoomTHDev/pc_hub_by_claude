@@ -26,7 +26,20 @@ export class BoOrderListPage implements OnInit {
   protected statusFilter = '';
   protected paymentFilter = '';
   protected dateFrom = '';
+  protected dateTo = '';
   private currentPage = 1;
+
+  protected readonly statusTabs = [
+    { label: 'All', value: '' },
+    { label: 'Pending', value: 'PENDING' },
+    { label: 'Payment Review', value: 'PAYMENT_REVIEW' },
+    { label: 'Approved', value: 'APPROVED' },
+    { label: 'Processing', value: 'PROCESSING' },
+    { label: 'Shipped', value: 'SHIPPED' },
+    { label: 'Delivered', value: 'DELIVERED' },
+    { label: 'Rejected', value: 'REJECTED' },
+    { label: 'Cancelled', value: 'CANCELLED' },
+  ];
 
   ngOnInit() {
     this.loadOrders();
@@ -35,6 +48,24 @@ export class BoOrderListPage implements OnInit {
   onFilterChange() {
     this.currentPage = 1;
     this.loadOrders();
+  }
+
+  onStatusTab(value: string) {
+    this.statusFilter = value;
+    this.onFilterChange();
+  }
+
+  hasActiveFilters(): boolean {
+    return !!(this.search || this.statusFilter || this.paymentFilter || this.dateFrom || this.dateTo);
+  }
+
+  clearFilters() {
+    this.search = '';
+    this.statusFilter = '';
+    this.paymentFilter = '';
+    this.dateFrom = '';
+    this.dateTo = '';
+    this.onFilterChange();
   }
 
   goToPage(page: number) {
@@ -52,6 +83,7 @@ export class BoOrderListPage implements OnInit {
         paymentMethod: this.paymentFilter || undefined,
         search: this.search || undefined,
         dateFrom: this.dateFrom || undefined,
+        dateTo: this.dateTo || undefined,
       })
       .subscribe({
         next: (res) => {

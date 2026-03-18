@@ -1,11 +1,11 @@
 @if (visible()) {
   <div
-    class="rounded-lg p-4 flex gap-4 animate-fade-in"
+    class="rounded-xl p-4 flex gap-3.5 animate-fade-in"
     [class]="styles().container"
     role="alert"
   >
     <!-- Icon -->
-    <div class="shrink-0 flex items-center justify-center w-10 h-10 rounded-full" [class]="styles().iconBg">
+    <div class="shrink-0 flex items-center justify-center w-9 h-9 rounded-lg" [class]="styles().iconBg">
       <div [class]="styles().icon">
         @switch (type()) {
           @case ('error') {

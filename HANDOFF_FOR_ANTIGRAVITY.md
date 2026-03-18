@@ -12,6 +12,7 @@ This repository is a monorepo with:
 
 - `apps/web` — Angular 21 frontend
 - `apps/api` — Express 5 + TypeScript backend
+- `e2e/` — Playwright end-to-end tests
 - `docs/` — project rules, architecture, DB schema, API spec, testing, security, phase plans
 - `CLAUDE.md` — highest-priority project instructions for coding work
 
@@ -21,10 +22,10 @@ Treat the **current repository state** as the source of truth over this handoff 
 
 ## 2. Current Repository State
 
-At handoff time, the repository had:
+At last documentation sync, the repository had:
 
 - branch: `main`
-- HEAD: `aa05105`
+- HEAD: `fd6f6d3`
 - a clean working tree when last verified locally
 
 Do **not** assume remote sync blindly. First verify:
@@ -102,10 +103,15 @@ These matter for future work:
 - MySQL adapter auth issue was fixed by enabling `allowPublicKeyRetrieval: true` in the Prisma MariaDB adapter configuration
 - Angular template normalization is complete (components now use `templateUrl`)
 - Frontend redesign slices 0–5 are complete
+- Playwright E2E test suite added (auth, catalog, cart-checkout flows)
+- Premium polish pass applied across all pages (shared design system, storefront, conversion journey, account/orders, backoffice)
+- Auth session preservation fixed across page refresh
+- Category parent clearing and form validation errors fixed
+- Validated route params now coerced correctly; 404 catch-all route added
 
 ---
 
-## 5. Frontend Redesign Status
+## 5. Frontend Redesign and Polish Status
 
 A full frontend redesign was completed after Phase 7 using a **Clean Pro** design direction:
 
@@ -130,6 +136,18 @@ A full frontend redesign was completed after Phase 7 using a **Clean Pro** desig
 **Customer-facing:** home, login, register, product list, product detail, cart, checkout, order confirmation, order history, order detail, address list, address form
 
 **Backoffice:** dashboard, analytics, daily sales, orders list/detail, products list/form, categories list/form, brands list/form, users list/form
+
+### Premium Polish Pass
+
+After the redesign slices, a dedicated premium polish pass was applied across the entire frontend:
+
+| Commit    | Area                                            |
+| --------- | ----------------------------------------------- |
+| `81a2317` | Shared design system foundation (global styles) |
+| `31c28e8` | Storefront experience                           |
+| `879bfbb` | Conversion journey (cart, checkout)              |
+| `84e4ee7` | Account and order experience                    |
+| `7deb28b` | Backoffice experience                           |
 
 ### TypeScript Safety Note
 
@@ -163,7 +181,11 @@ A Docker Compose production stack exists in `docker/docker-compose.production.ym
 
 ### CI
 
-GitHub Actions workflow exists at `.github/workflows/ci.yml`. It runs build/lint/tests for both API and web and uses a MySQL service container for API tests.
+GitHub Actions workflow exists at `.github/workflows/ci.yml`. It runs three jobs:
+
+1. **API** — lint, typecheck, build, and test against a MySQL 8.0 service container
+2. **Web** — lint, build, and test
+3. **E2E** — runs after API and Web pass; seeds the database, starts both servers, runs Playwright tests (Chromium), and uploads the HTML report as a CI artifact
 
 ---
 
@@ -171,31 +193,33 @@ GitHub Actions workflow exists at `.github/workflows/ci.yml`. It runs build/lint
 
 At the last verified state:
 
-|       | Web                     | API                     |
-| ----- | ----------------------- | ----------------------- |
-| Build | ✅ passing              | ✅ passing              |
-| Lint  | ✅ passing              | ✅ passing              |
-| Tests | ✅ 27 files / 110 tests | ✅ 23 files / 303 tests |
+|       | Web            | API            | E2E                |
+| ----- | -------------- | -------------- | ------------------ |
+| Build | ✅ passing     | ✅ passing     | n/a                |
+| Lint  | ✅ passing     | ✅ passing     | n/a                |
+| Tests | ✅ 27 files    | ✅ 23 files    | ✅ 3 spec files   |
 
-CI workflow exists and runs both app pipelines in GitHub Actions. A Docker Compose production stack is available in `docker/` as an optional self-hosted fallback but is not the primary deployment path.
+CI workflow runs all three pipelines (API, Web, E2E) in GitHub Actions. A Docker Compose production stack is available in `docker/` as an optional self-hosted fallback but is not the primary deployment path.
 
 ### Verification Commands
 
 ```bash
 # API
 cd apps/api
-npm run build
-npm run lint
-npm test
+npm run build && npm run lint && npm test
 
 # Web
 cd apps/web
-npm run build
-npm run lint
-npm test
-```
+npm run build && npm run lint && npm test
 
-If root workspace scripts exist, verify them in the root `package.json` before relying on them.
+# E2E (requires running API + Web dev servers, or let Playwright start them)
+cd e2e
+npm test
+
+# Or from root
+npm run test:all     # API + Web unit/integration
+npm run test:e2e     # Playwright E2E
+```
 
 ---
 
@@ -214,7 +238,7 @@ If root workspace scripts exist, verify them in the root `package.json` before r
 
 ## 9. Known Issues / Risks / Things to Verify
 
-1. **No end-to-end test suite yet** — Unit/integration coverage is strong, but there is no Playwright/Cypress layer.
+1. **E2E coverage is foundational, not comprehensive** — Playwright covers auth, catalog, and COD cart-checkout. PromptPay/slip upload, backoffice approval/rejection, address management, and registration are not yet covered.
 2. **No localization/i18n framework** — The app is English-first despite targeting Thai-market commerce patterns.
 3. **No email workflows** — No order-confirmation emails, password reset emails, or notification system.
 4. **No real-time updates** — Order and payment status changes require refresh/navigation, not push updates.
@@ -227,13 +251,14 @@ git status
 git log --oneline --decorate -5
 cd apps/api && npm test
 cd ../web && npm test
+cd ../.. && npm run test:e2e
 ```
 
 ---
 
 ## 10. Recommended Next Steps in Priority Order
 
-1. **E2E coverage** — Add Playwright or Cypress for key user flows (auth, checkout, slip upload, backoffice approval)
+1. **Expand E2E coverage** — Add Playwright specs for PromptPay/slip upload, backoffice approval/rejection, address management, and registration flows
 2. **Operational polish** — Improve production logging/observability; document deployment/rollback more explicitly
 3. **Email / notification workflows** — Order confirmation, payment review outcome, password reset
 4. **Internationalization** — Thai localization support, localized strings and date formatting
@@ -267,6 +292,12 @@ cd ../web && npm test
 - `apps/web/src/app/layouts/`
 - `apps/web/src/app/shared/components/`
 - `apps/web/src/app/features/`
+
+### E2E Tests
+
+- `e2e/playwright.config.ts`
+- `e2e/tests/`
+- `e2e/helpers/`
 
 ### Infra
 
@@ -311,6 +342,14 @@ npm run build && npm run lint && npm test
 # Web
 cd apps/web
 npm run build && npm run lint && npm test
+
+# E2E (starts API + Web dev servers automatically via Playwright config)
+cd e2e
+npm test
+
+# Or from root
+npm run test:all     # API + Web unit/integration
+npm run test:e2e     # Playwright E2E
 ```
 
 ### Docker Self-Hosted Verification (optional)
@@ -333,14 +372,25 @@ Verify the nginx-served frontend at: `http://localhost`
 
 ## 13. Git State / Branch / Recent Meaningful Commits
 
-At handoff time, the meaningful recent history was:
+At last documentation sync, the meaningful recent history was:
 
 | Commit    | Message                                                       |
 | --------- | ------------------------------------------------------------- |
+| `fd6f6d3` | `fix: coerce validated params and add 404 route`              |
+| `7deb28b` | `feat: polish premium backoffice experience`                  |
+| `84e4ee7` | `feat: polish premium account and order experience`           |
+| `879bfbb` | `feat: polish premium conversion journey`                     |
+| `31c28e8` | `feat: polish premium storefront experience`                  |
+| `81a2317` | `style: polish shared design system foundation`               |
+| `0346ce6` | `fix: allow clearing category parent on update`               |
+| `ddac989` | `fix: show category form validation errors correctly`         |
+| `8384abd` | `docs: align deployment guidance with Vercel and Railway`     |
+| `91702e8` | `test: add Playwright e2e slice 1`                            |
+| `2b56625` | `fix: preserve auth session across page refresh`              |
+| `ae15653` | `docs: add Antigravity handoff guide`                         |
 | `aa05105` | `feat: redesign storefront, account, and backoffice frontend` |
 | `407cdce` | `refactor: extract angular templates into html files`         |
 | `1d7d888` | `fix: restore Tailwind build and MySQL adapter connectivity`  |
-| `dc82487` | `fix: production docker and tailwind build issues`            |
 
 Before continuing work, verify current git state directly:
 

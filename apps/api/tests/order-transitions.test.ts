@@ -293,7 +293,7 @@ describe('Order status advancement — invalid transitions', () => {
       .send({ status: 'APPROVED' });
 
     expect(res.status).toBe(400);
-    expect(res.body.code).toBe('INVALID_STATUS_TRANSITION');
+    expect(res.body.code).toBe('VALIDATION_ERROR');
   });
 
   it('cannot use advance endpoint for REJECTED transition', async () => {
@@ -305,6 +305,84 @@ describe('Order status advancement — invalid transitions', () => {
       .send({ status: 'REJECTED' });
 
     expect(res.status).toBe(400);
-    expect(res.body.code).toBe('INVALID_STATUS_TRANSITION');
+    expect(res.body.code).toBe('VALIDATION_ERROR');
+  });
+});
+
+// --- Enum validation rejection ---
+describe('Order status advancement — schema validation', () => {
+  beforeEach(cleanOrders);
+
+  it('rejects arbitrary string as status', async () => {
+    const orderId = await createCodOrder();
+
+    const res = await request(app)
+      .post(`/api/v1/backoffice/orders/${orderId}/status`)
+      .set('Authorization', `Bearer ${staffToken}`)
+      .send({ status: 'FOOBAR' });
+
+    expect(res.status).toBe(400);
+    expect(res.body.code).toBe('VALIDATION_ERROR');
+  });
+
+  it('rejects empty status', async () => {
+    const orderId = await createCodOrder();
+
+    const res = await request(app)
+      .post(`/api/v1/backoffice/orders/${orderId}/status`)
+      .set('Authorization', `Bearer ${staffToken}`)
+      .send({ status: '' });
+
+    expect(res.status).toBe(400);
+    expect(res.body.code).toBe('VALIDATION_ERROR');
+  });
+
+  it('rejects APPROVED through advance endpoint at schema level', async () => {
+    const orderId = await createCodOrder();
+
+    const res = await request(app)
+      .post(`/api/v1/backoffice/orders/${orderId}/status`)
+      .set('Authorization', `Bearer ${staffToken}`)
+      .send({ status: 'APPROVED' });
+
+    expect(res.status).toBe(400);
+    expect(res.body.code).toBe('VALIDATION_ERROR');
+  });
+});
+
+// --- Backoffice order list query enum validation ---
+describe('Backoffice order list — query enum validation', () => {
+  it('rejects invalid status filter', async () => {
+    const res = await request(app)
+      .get('/api/v1/backoffice/orders?status=INVALID_STATUS')
+      .set('Authorization', `Bearer ${staffToken}`);
+
+    expect(res.status).toBe(400);
+    expect(res.body.code).toBe('VALIDATION_ERROR');
+  });
+
+  it('rejects invalid paymentMethod filter', async () => {
+    const res = await request(app)
+      .get('/api/v1/backoffice/orders?paymentMethod=BITCOIN')
+      .set('Authorization', `Bearer ${staffToken}`);
+
+    expect(res.status).toBe(400);
+    expect(res.body.code).toBe('VALIDATION_ERROR');
+  });
+
+  it('accepts valid status filter', async () => {
+    const res = await request(app)
+      .get('/api/v1/backoffice/orders?status=PENDING')
+      .set('Authorization', `Bearer ${staffToken}`);
+
+    expect(res.status).toBe(200);
+  });
+
+  it('accepts valid paymentMethod filter', async () => {
+    const res = await request(app)
+      .get('/api/v1/backoffice/orders?paymentMethod=COD')
+      .set('Authorization', `Bearer ${staffToken}`);
+
+    expect(res.status).toBe(200);
   });
 });

@@ -1,5 +1,5 @@
 import { Component, inject, signal } from '@angular/core';
-import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
+import { Router, RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 
 @Component({
@@ -8,6 +8,7 @@ import { AuthService } from '../../core/services/auth.service';
   templateUrl: './backoffice-layout.html',
 })
 export class BackofficeLayout {
+  private readonly router = inject(Router);
   protected readonly auth = inject(AuthService);
   protected readonly sidebarOpen = signal(false);
 
@@ -16,6 +17,8 @@ export class BackofficeLayout {
   }
 
   onLogout() {
-    this.auth.logout().subscribe();
+    this.auth.logout().subscribe(() => {
+      void this.router.navigate(['/login']);
+    });
   }
 }

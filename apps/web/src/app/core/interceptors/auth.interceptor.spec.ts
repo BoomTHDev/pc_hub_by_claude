@@ -17,12 +17,7 @@ describe('authInterceptor', () => {
   let authService: AuthService;
   let router: Router;
 
-  beforeEach(() => {
-    // Prevent AuthService constructor from triggering fetchMe
-    vi.spyOn(Storage.prototype, 'getItem').mockReturnValue(null);
-    vi.spyOn(Storage.prototype, 'setItem');
-    vi.spyOn(Storage.prototype, 'removeItem');
-
+  beforeEach(async () => {
     TestBed.configureTestingModule({
       providers: [
         provideRouter([]),
@@ -35,11 +30,17 @@ describe('authInterceptor', () => {
     httpTesting = TestBed.inject(HttpTestingController);
     authService = TestBed.inject(AuthService);
     router = TestBed.inject(Router);
+
+    // Flush the startup restoreSession refresh request
+    await Promise.resolve();
+    const startupReqs = httpTesting.match((r) => r.url.includes('/auth/refresh'));
+    for (const req of startupReqs) {
+      req.flush({ message: 'No token' }, { status: 401, statusText: 'Unauthorized' });
+    }
   });
 
   afterEach(() => {
     httpTesting.verify();
-    vi.restoreAllMocks();
   });
 
   it('attaches Authorization header when token exists', () => {
@@ -50,6 +51,7 @@ describe('authInterceptor', () => {
     const req = httpTesting.expectOne('/api/v1/products');
     expect(req.request.headers.get('Authorization')).toBe('Bearer my-token');
     req.flush([]);
+    vi.restoreAllMocks();
   });
 
   it('does not attach header when no token', () => {
@@ -60,6 +62,7 @@ describe('authInterceptor', () => {
     const req = httpTesting.expectOne('/api/v1/products');
     expect(req.request.headers.has('Authorization')).toBe(false);
     req.flush([]);
+    vi.restoreAllMocks();
   });
 
   it('on 401 from non-auth endpoint: refreshes and retries with new token', async () => {
@@ -70,7 +73,6 @@ describe('authInterceptor', () => {
     });
 
     vi.spyOn(authService, 'refresh').mockReturnValue(
-      // Simulate successful refresh
       new (await import('rxjs')).Observable((subscriber) => {
         subscriber.next({ success: true, data: { accessToken: 'new-token' } } as never);
         subscriber.complete();
@@ -90,6 +92,7 @@ describe('authInterceptor', () => {
 
     const result = await resultPromise;
     expect(result).toEqual({ data: [] });
+    vi.restoreAllMocks();
   });
 
   it('on 401 during refresh failure: clears session and navigates to /login', async () => {
@@ -112,6 +115,7 @@ describe('authInterceptor', () => {
     await expect(resultPromise).rejects.toThrow();
     expect(clearSpy).toHaveBeenCalled();
     expect(navSpy).toHaveBeenCalledWith(['/login']);
+    vi.restoreAllMocks();
   });
 
   it('does not intercept 401 on /auth/login', () => {
@@ -128,6 +132,7 @@ describe('authInterceptor', () => {
     req.flush({ message: 'Invalid' }, { status: 401, statusText: 'Unauthorized' });
 
     expect(refreshSpy).not.toHaveBeenCalled();
+    vi.restoreAllMocks();
   });
 
   it('does not intercept 401 on /auth/register', () => {
@@ -144,6 +149,7 @@ describe('authInterceptor', () => {
     req.flush({ message: 'Error' }, { status: 401, statusText: 'Unauthorized' });
 
     expect(refreshSpy).not.toHaveBeenCalled();
+    vi.restoreAllMocks();
   });
 
   it('does not intercept 401 on /auth/refresh', () => {
@@ -156,9 +162,10 @@ describe('authInterceptor', () => {
       },
     });
 
-    const req = httpTesting.expectOne('/api/v1/auth/refresh');
+    const req = httpTesting.expectOne((r) => r.url.includes('/auth/refresh'));
     req.flush({ message: 'Expired' }, { status: 401, statusText: 'Unauthorized' });
 
     expect(refreshSpy).not.toHaveBeenCalled();
+    vi.restoreAllMocks();
   });
 });

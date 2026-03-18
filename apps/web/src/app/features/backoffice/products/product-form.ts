@@ -11,6 +11,11 @@ import { extractErrorBody } from '../../../shared/utils/error.utils';
 import { AlertBanner } from '../../../shared/components/alert-banner/alert-banner';
 import { ConfirmDialog } from '../../../shared/components/confirm-dialog/confirm-dialog';
 
+export interface PendingFile {
+  file: File;
+  previewUrl: string;
+}
+
 @Component({
   selector: 'app-bo-product-form',
   imports: [RouterLink, FormsModule, AlertBanner, ConfirmDialog],
@@ -31,6 +36,10 @@ export class BoProductFormPage implements OnInit {
   protected readonly product = signal<AdminProductDetail | null>(null);
   protected readonly categories = signal<AdminCategory[]>([]);
   protected readonly brands = signal<AdminBrand[]>([]);
+
+  protected readonly pendingFiles = signal<PendingFile[]>([]);
+  protected readonly primaryIndex = signal(0);
+  protected readonly uploadProgress = signal('');
 
   readonly deleteImageDialog = viewChild<ConfirmDialog>('deleteImageDialog');
   private pendingDeleteImageId: number | null = null;
@@ -57,6 +66,40 @@ export class BoProductFormPage implements OnInit {
     this.loadDropdowns();
   }
 
+  onPendingFilesSelected(event: Event) {
+    const target = event.target;
+    if (!(target instanceof HTMLInputElement)) return;
+    const files = target.files;
+    if (!files || files.length === 0) return;
+
+    const current = this.pendingFiles();
+    const newEntries: PendingFile[] = [];
+    for (const file of Array.from(files)) {
+      newEntries.push({
+        file,
+        previewUrl: URL.createObjectURL(file),
+      });
+    }
+    this.pendingFiles.set([...current, ...newEntries]);
+    target.value = '';
+  }
+
+  removePendingFile(index: number) {
+    const current = this.pendingFiles();
+    URL.revokeObjectURL(current[index].previewUrl);
+    const updated = current.filter((_, i) => i !== index);
+    this.pendingFiles.set(updated);
+    if (this.primaryIndex() >= updated.length) {
+      this.primaryIndex.set(Math.max(0, updated.length - 1));
+    } else if (this.primaryIndex() > index) {
+      this.primaryIndex.set(this.primaryIndex() - 1);
+    }
+  }
+
+  setPrimary(index: number) {
+    this.primaryIndex.set(index);
+  }
+
   onSave(formRef: { valid?: boolean | null }) {
     this.submitted = true;
     if (!formRef.valid) return;
@@ -65,8 +108,15 @@ export class BoProductFormPage implements OnInit {
     this.errorMsg.set('');
     this.serverFieldErrors.set({});
 
+    const slug = this.form.name
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '');
+
     const body: Record<string, unknown> = {
       name: this.form.name,
+      slug,
       sku: this.form.sku,
       description: this.form.description,
       price: this.form.price,
@@ -83,40 +133,56 @@ export class BoProductFormPage implements OnInit {
         : this.catalogService.createProduct(body);
 
     request.subscribe({
-      next: () => {
-        this.router.navigate(['/backoffice/products']);
+      next: (res) => {
+        const productId = this.isEdit() && currentProduct ? currentProduct.id : res.data.id;
+        const pending = this.pendingFiles();
+        if (pending.length > 0) {
+          this.uploadPendingImages(productId, pending);
+        } else {
+          this.router.navigate(['/backoffice/products']);
+        }
       },
       error: (err) => {
         this.saving.set(false);
-        const body = extractErrorBody(err.error);
-        if (body.fieldErrors) {
-          this.serverFieldErrors.set(body.fieldErrors);
+        const errBody = extractErrorBody(err.error);
+        if (errBody.fieldErrors) {
+          this.serverFieldErrors.set(errBody.fieldErrors);
           this.errorMsg.set('Please fix the errors below.');
         } else {
-          this.errorMsg.set(body.message ?? 'Failed to save product');
+          this.errorMsg.set(errBody.message ?? 'Failed to save product');
         }
       },
     });
   }
 
-  onFileSelected(event: Event) {
-    const target = event.target;
-    if (!(target instanceof HTMLInputElement)) return;
-    const file = target.files?.[0];
-    const currentProduct = this.product();
-    if (!file || !currentProduct) return;
+  private uploadPendingImages(productId: number, files: PendingFile[]) {
+    const primaryIdx = this.primaryIndex();
+    // Reorder: primary image first (sortOrder 0)
+    const ordered = [...files];
+    if (primaryIdx > 0 && primaryIdx < ordered.length) {
+      const [primary] = ordered.splice(primaryIdx, 1);
+      ordered.unshift(primary);
+    }
 
-    this.uploading.set(true);
-    this.catalogService.uploadProductImage(currentProduct.id, file).subscribe({
-      next: () => {
-        this.uploading.set(false);
-        this.loadProduct(currentProduct.id);
-        target.value = '';
-      },
-      error: () => {
-        this.uploading.set(false);
-      },
-    });
+    let uploaded = 0;
+    const uploadNext = () => {
+      if (uploaded >= ordered.length) {
+        this.router.navigate(['/backoffice/products']);
+        return;
+      }
+      this.uploadProgress.set(`Uploading image ${uploaded + 1} of ${ordered.length}...`);
+      this.catalogService.uploadProductImage(productId, ordered[uploaded].file).subscribe({
+        next: () => {
+          uploaded++;
+          uploadNext();
+        },
+        error: () => {
+          uploaded++;
+          uploadNext();
+        },
+      });
+    };
+    uploadNext();
   }
 
   confirmDeleteImage(imageId: number) {

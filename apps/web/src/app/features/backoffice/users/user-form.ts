@@ -1,13 +1,14 @@
 import { Component, inject, signal, OnInit } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { UpperCasePipe } from '@angular/common';
 import { BackofficeUserService } from '../../../core/services/backoffice-user.service';
 import { extractErrorBody } from '../../../shared/utils/error.utils';
 import { AlertBanner } from '../../../shared/components/alert-banner/alert-banner';
 
 @Component({
   selector: 'app-bo-user-form',
-  imports: [RouterLink, FormsModule, AlertBanner],
+  imports: [RouterLink, FormsModule, UpperCasePipe, AlertBanner],
   templateUrl: './user-form.html',
 })
 export class BoUserFormPage implements OnInit {

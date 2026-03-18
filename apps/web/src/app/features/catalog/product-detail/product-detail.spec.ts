@@ -52,6 +52,11 @@ describe('ProductDetailPage', () => {
   });
 
   afterEach(() => {
+    // Flush any pending startup refresh requests from AuthService (created lazily during tests)
+    const pendingRefresh = httpTesting.match((r) => r.url.includes('/auth/refresh'));
+    for (const req of pendingRefresh) {
+      req.flush({ message: 'No token' }, { status: 401, statusText: 'Unauthorized' });
+    }
     httpTesting.verify();
   });
 

@@ -7,12 +7,19 @@ describe('OrderService', () => {
   let service: OrderService;
   let httpTesting: HttpTestingController;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     TestBed.configureTestingModule({
       providers: [provideHttpClient(), provideHttpClientTesting()],
     });
     service = TestBed.inject(OrderService);
     httpTesting = TestBed.inject(HttpTestingController);
+
+    // Flush the startup restoreSession refresh request from AuthService
+    await Promise.resolve();
+    const startupReqs = httpTesting.match((r) => r.url.includes('/auth/refresh'));
+    for (const req of startupReqs) {
+      req.flush({ message: 'No token' }, { status: 401, statusText: 'Unauthorized' });
+    }
   });
 
   afterEach(() => {
@@ -57,7 +64,7 @@ describe('OrderService', () => {
 
   it('fetches PromptPay QR data', () => {
     service.getPromptPayQR(1).subscribe((res) => {
-      expect(res.data.qrDataUrl).toContain('data:image');
+      expect(res.data.qrDataUrl).toContain('promptpay.io');
     });
 
     const req = httpTesting.expectOne((r) =>
@@ -66,7 +73,7 @@ describe('OrderService', () => {
     req.flush({
       success: true,
       message: 'OK',
-      data: { qrDataUrl: 'data:image/png;base64,xxx', amount: 21900, promptPayId: '0812345678', orderNumber: 'PCH-20240101-XXXX' },
+      data: { qrDataUrl: 'https://promptpay.io/0812345678/21900.png', amount: 21900, promptPayId: '0812345678', orderNumber: 'PCH-20240101-XXXX' },
     });
   });
 

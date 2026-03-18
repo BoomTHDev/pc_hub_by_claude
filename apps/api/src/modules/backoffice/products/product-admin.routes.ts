@@ -17,6 +17,12 @@ productAdminRouter.post(
   productAdminController.create,
 );
 
+productAdminRouter.get(
+  '/:productId',
+  requireRole('STAFF', 'ADMIN'),
+  productAdminController.get,
+);
+
 productAdminRouter.patch(
   '/:productId',
   requireRole('ADMIN'),

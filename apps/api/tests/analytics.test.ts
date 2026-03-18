@@ -237,6 +237,8 @@ describe('Analytics Endpoints', () => {
   });
 
   it('revenue trend with period=7d returns array', async () => {
+    await createAndDeliverOrder(productId, 2);
+
     const res = await request(app)
       .get('/api/v1/backoffice/analytics/revenue-trend?period=7d')
       .set('Authorization', `Bearer ${adminToken}`);
@@ -245,6 +247,7 @@ describe('Analytics Endpoints', () => {
     expect(Array.isArray(res.body.data)).toBe(true);
     // 7 days back + today = 8 entries
     expect(res.body.data.length).toBe(8);
+    expect(res.body.data.some((point: { revenue: number; orderCount: number }) => point.revenue > 0)).toBe(true);
     for (const point of res.body.data) {
       expect(typeof point.date).toBe('string');
       expect(typeof point.revenue).toBe('number');

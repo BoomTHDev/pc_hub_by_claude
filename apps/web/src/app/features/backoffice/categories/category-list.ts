@@ -21,6 +21,9 @@ export class BoCategoryListPage implements OnInit {
   readonly deleteDialog = viewChild<ConfirmDialog>('deleteDialog');
 
   protected readonly categories = signal<AdminCategory[]>([]);
+  protected readonly parentCategories = signal<AdminCategory[]>([]);
+  protected readonly childrenMap = signal<Record<number, AdminCategory[]>>({});
+  protected readonly expandedIds = signal<Set<number>>(new Set());
   protected readonly pagination = signal<PaginationMeta | null>(null);
   protected readonly loading = signal(true);
 
@@ -46,6 +49,29 @@ export class BoCategoryListPage implements OnInit {
     this.loadCategories();
   }
 
+  toggleExpand(catId: number) {
+    const current = this.expandedIds();
+    const next = new Set(current);
+    if (next.has(catId)) {
+      next.delete(catId);
+    } else {
+      next.add(catId);
+    }
+    this.expandedIds.set(next);
+  }
+
+  isExpanded(catId: number): boolean {
+    return this.expandedIds().has(catId);
+  }
+
+  getChildren(parentId: number): AdminCategory[] {
+    return this.childrenMap()[parentId] ?? [];
+  }
+
+  hasChildren(parentId: number): boolean {
+    return (this.childrenMap()[parentId]?.length ?? 0) > 0;
+  }
+
   onToggleActive(cat: AdminCategory) {
     this.catalogService.toggleCategoryActive(cat.id).subscribe({
       next: (res) => {
@@ -53,6 +79,7 @@ export class BoCategoryListPage implements OnInit {
           c.id === cat.id ? { ...c, isActive: res.data.isActive } : c,
         );
         this.categories.set(updated);
+        this.buildTree(updated);
       },
     });
   }
@@ -72,17 +99,41 @@ export class BoCategoryListPage implements OnInit {
     });
   }
 
+  private buildTree(cats: AdminCategory[]) {
+    const parents: AdminCategory[] = [];
+    const children: Record<number, AdminCategory[]> = {};
+
+    for (const cat of cats) {
+      if (!cat.parentId) {
+        parents.push(cat);
+      } else {
+        if (!children[cat.parentId]) children[cat.parentId] = [];
+        children[cat.parentId].push(cat);
+      }
+    }
+
+    // If searching, show all as flat (search may return children without parents)
+    if (this.search) {
+      this.parentCategories.set(cats);
+      this.childrenMap.set({});
+    } else {
+      this.parentCategories.set(parents);
+      this.childrenMap.set(children);
+    }
+  }
+
   private loadCategories() {
     this.loading.set(true);
     this.catalogService
       .listCategories({
         page: this.currentPage,
-        limit: 20,
+        limit: 100,
         search: this.search || undefined,
       })
       .subscribe({
         next: (res) => {
           this.categories.set(res.data);
+          this.buildTree(res.data);
           this.pagination.set(res.pagination);
           this.loading.set(false);
         },
