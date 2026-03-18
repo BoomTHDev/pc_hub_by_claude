@@ -13,9 +13,15 @@ const TEST_USER = {
 };
 
 async function cleanDatabase() {
+  await prisma.auditLog.deleteMany();
+  await prisma.paymentSlip.deleteMany();
+  await prisma.payment.deleteMany();
+  await prisma.orderItem.deleteMany();
+  await prisma.order.deleteMany();
+  await prisma.cartItem.deleteMany();
+  await prisma.cart.deleteMany();
   await prisma.refreshToken.deleteMany();
   await prisma.address.deleteMany();
-  await prisma.auditLog.deleteMany();
   await prisma.user.deleteMany();
 }
 

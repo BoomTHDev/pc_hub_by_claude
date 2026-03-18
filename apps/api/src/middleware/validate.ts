@@ -48,6 +48,8 @@ export function validate(schemas: ValidationSchemas) {
         sendValidationError(res, "Invalid parameters", result.error);
         return;
       }
+      // Re-assign parsed data to req.params to ensure controllers receive coerced types
+      req.params = result.data as any;
     }
 
     if (schemas.query) {
@@ -56,6 +58,8 @@ export function validate(schemas: ValidationSchemas) {
         sendValidationError(res, "Invalid query parameters", result.error);
         return;
       }
+      // Re-assign parsed data to req.query to ensure controllers receive coerced types
+      req.query = result.data as any;
     }
 
     next();
