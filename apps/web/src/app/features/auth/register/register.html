@@ -1,26 +1,43 @@
 <div class="flex min-h-[calc(100vh-5rem)]">
   <!-- Left brand panel (hidden on mobile) -->
-  <div class="hidden lg:flex lg:w-1/2 bg-slate-900 items-center justify-center p-12">
-    <div class="max-w-md text-center">
-      <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-indigo-600 text-white text-2xl font-bold mb-6">PC</div>
+  <div class="hidden lg:flex lg:w-1/2 relative bg-slate-900 items-center justify-center p-12 overflow-hidden">
+    <!-- Background decoration -->
+    <div class="absolute inset-0 pointer-events-none">
+      <div class="absolute -left-20 -top-20 w-72 h-72 rounded-full bg-indigo-700/25 blur-[80px]"></div>
+      <div class="absolute -right-10 bottom-0 w-64 h-64 rounded-full bg-violet-700/20 blur-[80px]"></div>
+      <div
+        class="absolute inset-0 opacity-[0.03]"
+        style="background-image: linear-gradient(rgba(255,255,255,.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.5) 1px, transparent 1px); background-size: 48px 48px;"
+      ></div>
+    </div>
+
+    <div class="relative max-w-md text-center">
+      <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-600 to-violet-600 text-white text-2xl font-bold mb-7 shadow-xl shadow-indigo-900/50">
+        PC
+      </div>
       <h2 class="text-3xl font-bold text-white tracking-tight">Join PC Hub</h2>
-      <p class="mt-3 text-slate-400 leading-relaxed">
+      <p class="mt-3 text-slate-400 leading-relaxed max-w-xs mx-auto">
         Create your account to start building your dream PC with quality components and competitive prices.
       </p>
-      <div class="mt-8 grid grid-cols-3 gap-4 text-center">
-        <div>
-          <p class="text-lg font-bold text-white">Free</p>
-          <p class="text-xs text-slate-500">Shipping</p>
+
+      <!-- Benefits grid -->
+      <div class="mt-10 grid grid-cols-3 gap-5">
+        <div class="bg-slate-800/60 border border-slate-700/40 rounded-xl p-3.5">
+          <p class="text-xl font-bold text-white">Free</p>
+          <p class="text-xs text-slate-400 mt-0.5">Shipping</p>
         </div>
-        <div>
-          <p class="text-lg font-bold text-white">24/7</p>
-          <p class="text-xs text-slate-500">Support</p>
+        <div class="bg-slate-800/60 border border-slate-700/40 rounded-xl p-3.5">
+          <p class="text-xl font-bold text-white">24/7</p>
+          <p class="text-xs text-slate-400 mt-0.5">Support</p>
         </div>
-        <div>
-          <p class="text-lg font-bold text-white">100%</p>
-          <p class="text-xs text-slate-500">Warranty</p>
+        <div class="bg-slate-800/60 border border-slate-700/40 rounded-xl p-3.5">
+          <p class="text-xl font-bold text-white">100%</p>
+          <p class="text-xs text-slate-400 mt-0.5">Warranty</p>
         </div>
       </div>
+
+      <!-- Fine print -->
+      <p class="mt-8 text-xs text-slate-500">No credit card required to create an account</p>
     </div>
   </div>
 
@@ -29,15 +46,17 @@
     <div class="w-full max-w-md">
       <!-- Mobile logo -->
       <div class="lg:hidden text-center mb-8">
-        <div class="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-indigo-600 text-white text-lg font-bold">PC</div>
+        <div class="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-600 to-violet-600 text-white text-lg font-bold shadow-md shadow-indigo-600/25">
+          PC
+        </div>
       </div>
 
-      <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-8">
-        <div class="mb-6">
+      <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-8">
+        <div class="mb-7">
           <h1 class="text-2xl font-bold tracking-tight text-slate-900">Create account</h1>
-          <p class="mt-1 text-sm text-slate-500">
+          <p class="mt-1.5 text-sm text-slate-500">
             Already have an account?
-            <a routerLink="/login" class="font-medium text-indigo-600 hover:text-indigo-500">
+            <a routerLink="/login" class="font-medium text-indigo-600 hover:text-indigo-500 transition-colors">
               Sign in
             </a>
           </p>
@@ -65,10 +84,10 @@
                 autocomplete="given-name"
                 placeholder="John"
                 [class.input-error]="firstNameRef.invalid && (firstNameRef.touched || submitted)"
-                class="block w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none"
+                class="block w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none transition-colors"
               />
               @if (firstNameRef.invalid && (firstNameRef.touched || submitted)) {
-                <p class="mt-1 text-xs text-red-600">First name is required.</p>
+                <p class="mt-1.5 text-xs text-red-600">First name is required.</p>
               }
             </div>
             <div>
@@ -85,10 +104,10 @@
                 autocomplete="family-name"
                 placeholder="Doe"
                 [class.input-error]="lastNameRef.invalid && (lastNameRef.touched || submitted)"
-                class="block w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none"
+                class="block w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none transition-colors"
               />
               @if (lastNameRef.invalid && (lastNameRef.touched || submitted)) {
-                <p class="mt-1 text-xs text-red-600">Last name is required.</p>
+                <p class="mt-1.5 text-xs text-red-600">Last name is required.</p>
               }
             </div>
           </div>
@@ -108,10 +127,10 @@
               autocomplete="email"
               placeholder="you@example.com"
               [class.input-error]="(emailRef.invalid && (emailRef.touched || submitted)) || serverFieldErrors()['email']"
-              class="block w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none"
+              class="block w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none transition-colors"
             />
             @if (emailRef.invalid && (emailRef.touched || submitted)) {
-              <p class="mt-1 text-xs text-red-600">
+              <p class="mt-1.5 text-xs text-red-600">
                 @if (emailRef.errors?.['required']) {
                   Email is required.
                 } @else if (emailRef.errors?.['email']) {
@@ -119,7 +138,7 @@
                 }
               </p>
             } @else if (serverFieldErrors()['email']) {
-              <p class="mt-1 text-xs text-red-600">{{ serverFieldErrors()['email'] }}</p>
+              <p class="mt-1.5 text-xs text-red-600">{{ serverFieldErrors()['email'] }}</p>
             }
           </div>
 
@@ -138,10 +157,10 @@
               autocomplete="tel"
               placeholder="08X-XXX-XXXX"
               [class.input-error]="(phoneRef.invalid && (phoneRef.touched || submitted)) || serverFieldErrors()['phoneNumber']"
-              class="block w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none"
+              class="block w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none transition-colors"
             />
             @if (phoneRef.invalid && (phoneRef.touched || submitted)) {
-              <p class="mt-1 text-xs text-red-600">
+              <p class="mt-1.5 text-xs text-red-600">
                 @if (phoneRef.errors?.['required']) {
                   Phone number is required.
                 } @else if (phoneRef.errors?.['minlength']) {
@@ -149,7 +168,7 @@
                 }
               </p>
             } @else if (serverFieldErrors()['phoneNumber']) {
-              <p class="mt-1 text-xs text-red-600">{{ serverFieldErrors()['phoneNumber'] }}</p>
+              <p class="mt-1.5 text-xs text-red-600">{{ serverFieldErrors()['phoneNumber'] }}</p>
             }
           </div>
 
@@ -168,10 +187,10 @@
               autocomplete="new-password"
               placeholder="Minimum 8 characters"
               [class.input-error]="(passwordRef.invalid && (passwordRef.touched || submitted)) || serverFieldErrors()['password']"
-              class="block w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none"
+              class="block w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none transition-colors"
             />
             @if (passwordRef.invalid && (passwordRef.touched || submitted)) {
-              <p class="mt-1 text-xs text-red-600">
+              <p class="mt-1.5 text-xs text-red-600">
                 @if (passwordRef.errors?.['required']) {
                   Password is required.
                 } @else if (passwordRef.errors?.['minlength']) {
@@ -179,18 +198,26 @@
                 }
               </p>
             } @else if (serverFieldErrors()['password']) {
-              <p class="mt-1 text-xs text-red-600">{{ serverFieldErrors()['password'] }}</p>
+              <p class="mt-1.5 text-xs text-red-600">{{ serverFieldErrors()['password'] }}</p>
             }
           </div>
 
-          <button
-            type="submit"
-            [disabled]="loading()"
-            class="w-full rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-indigo-500 shadow-sm disabled:bg-slate-300 disabled:cursor-not-allowed"
-          >
-            {{ loading() ? 'Creating account...' : 'Create account' }}
-          </button>
+          <div class="pt-1">
+            <button
+              type="submit"
+              [disabled]="loading()"
+              class="w-full rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 px-4 py-3 text-sm font-semibold text-white shadow-md shadow-indigo-600/20 hover:from-indigo-500 hover:to-violet-500 disabled:from-slate-300 disabled:to-slate-300 disabled:shadow-none disabled:cursor-not-allowed transition-all duration-200"
+            >
+              {{ loading() ? 'Creating account...' : 'Create account' }}
+            </button>
+          </div>
         </form>
+
+        <!-- Trust note -->
+        <p class="mt-5 text-center text-xs text-slate-400">
+          <svg class="inline w-3.5 h-3.5 mr-0.5 -mt-0.5 text-slate-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" /></svg>
+          Your information is secure and never shared
+        </p>
       </div>
     </div>
   </div>

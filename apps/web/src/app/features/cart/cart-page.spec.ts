@@ -87,7 +87,7 @@ describe('CartPage', () => {
     fixture.detectChanges();
 
     const el = fixture.nativeElement as HTMLElement;
-    expect(el.querySelector('.animate-pulse')).toBeTruthy();
+    expect(el.querySelector('.shimmer')).toBeTruthy();
 
     const req = httpTesting.expectOne((r) => r.url.includes('/cart'));
     req.flush(EMPTY_CART);
