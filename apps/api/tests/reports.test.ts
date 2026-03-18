@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest';
 import request from 'supertest';
+import ExcelJS from 'exceljs';
 import { app } from '../src/app.js';
 import { prisma } from '../src/config/database.js';
 import { getBodyString, getBodyNumber, getBodyArray } from './helpers.js';
@@ -256,6 +257,10 @@ describe('Daily Sales Reports', () => {
 
   it('excel export returns correct content type', async () => {
     await createOrder();
+    await prisma.user.update({
+      where: { email: CUSTOMER.email },
+      data: { firstName: 'สมชาย', lastName: 'ลูกค้าทดสอบ' },
+    });
 
     const res = await request(app)
       .get('/api/v1/backoffice/reports/daily-sales/excel')
@@ -268,10 +273,32 @@ describe('Daily Sales Reports', () => {
     );
     expect(res.body).toBeInstanceOf(Buffer);
     expect(res.body.length).toBeGreaterThan(0);
+
+    const workbook = new ExcelJS.Workbook();
+    await workbook.xlsx.load(res.body);
+
+    const worksheet = workbook.getWorksheet('รายงานยอดขาย');
+    expect(worksheet).toBeDefined();
+    expect(worksheet!.getCell('A1').value).toBe('รายงานยอดขายประจำวัน (Daily Sales Report)');
+
+    let thaiCustomerFound = false;
+    worksheet!.eachRow((row) => {
+      row.eachCell((cell) => {
+        if (cell.value === 'สมชาย ลูกค้าทดสอบ') {
+          thaiCustomerFound = true;
+        }
+      });
+    });
+
+    expect(thaiCustomerFound).toBe(true);
   });
 
   it('pdf export returns correct content type', async () => {
     await createOrder();
+    await prisma.user.update({
+      where: { email: CUSTOMER.email },
+      data: { firstName: 'สมหญิง', lastName: 'รายงานไทย' },
+    });
 
     const res = await request(app)
       .get('/api/v1/backoffice/reports/daily-sales/pdf')
@@ -282,5 +309,7 @@ describe('Daily Sales Reports', () => {
     expect(res.headers['content-type']).toContain('application/pdf');
     expect(res.body).toBeInstanceOf(Buffer);
     expect(res.body.length).toBeGreaterThan(0);
+    expect(res.body.subarray(0, 4).toString()).toBe('%PDF');
+    expect(res.body.includes(Buffer.from('Sarabun'))).toBe(true);
   });
 });
