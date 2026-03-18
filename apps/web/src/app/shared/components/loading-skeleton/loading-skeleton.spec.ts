@@ -13,7 +13,7 @@ describe('LoadingSkeleton', () => {
     fixture.detectChanges();
 
     const el: HTMLElement = fixture.nativeElement;
-    expect(el.querySelector('.animate-pulse')).toBeTruthy();
+    expect(el.querySelector('.shimmer')).toBeTruthy();
     expect(el.querySelector('.aspect-square')).toBeTruthy();
   });
 
@@ -23,7 +23,7 @@ describe('LoadingSkeleton', () => {
     fixture.detectChanges();
 
     const el: HTMLElement = fixture.nativeElement;
-    const cards = el.querySelectorAll('.animate-pulse');
+    const cards = el.querySelectorAll('.skeleton-item');
     expect(cards.length).toBe(3);
   });
 
@@ -34,7 +34,7 @@ describe('LoadingSkeleton', () => {
     fixture.detectChanges();
 
     const el: HTMLElement = fixture.nativeElement;
-    const rows = el.querySelectorAll('.animate-pulse');
+    const rows = el.querySelectorAll('.skeleton-item');
     expect(rows.length).toBe(2);
   });
 
@@ -44,6 +44,6 @@ describe('LoadingSkeleton', () => {
     fixture.detectChanges();
 
     const el: HTMLElement = fixture.nativeElement;
-    expect(el.querySelector('.animate-pulse')).toBeTruthy();
+    expect(el.querySelector('.shimmer')).toBeTruthy();
   });
 });

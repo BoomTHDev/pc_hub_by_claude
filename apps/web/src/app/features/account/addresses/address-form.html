@@ -17,7 +17,7 @@
     </div>
   }
 
-  <form (ngSubmit)="onSubmit()" class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+  <form #addrForm="ngForm" (ngSubmit)="onSubmit(addrForm)" class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
     <!-- Label section -->
     <div class="p-6 border-b border-slate-100">
       <h2 class="text-sm font-medium text-slate-500 uppercase tracking-wider mb-4">Address Label</h2>
@@ -27,11 +27,18 @@
           id="label"
           type="text"
           [(ngModel)]="form.label"
+          #labelRef="ngModel"
           name="label"
           required
           placeholder="e.g. Home, Office, Warehouse"
+          [class.input-error]="(labelRef.invalid && (labelRef.touched || submitted)) || serverFieldErrors()['label']"
           class="block w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none"
         />
+        @if (labelRef.invalid && (labelRef.touched || submitted)) {
+          <p class="mt-1 text-xs text-red-600">Label is required.</p>
+        } @else if (serverFieldErrors()['label']) {
+          <p class="mt-1 text-xs text-red-600">{{ serverFieldErrors()['label'] }}</p>
+        }
       </div>
     </div>
 
@@ -47,12 +54,19 @@
             id="recipientName"
             type="text"
             [(ngModel)]="form.recipientName"
+            #recipientRef="ngModel"
             name="recipientName"
             required
             autocomplete="name"
             placeholder="Full name"
+            [class.input-error]="(recipientRef.invalid && (recipientRef.touched || submitted)) || serverFieldErrors()['recipientName']"
             class="block w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none"
           />
+          @if (recipientRef.invalid && (recipientRef.touched || submitted)) {
+            <p class="mt-1 text-xs text-red-600">Recipient name is required.</p>
+          } @else if (serverFieldErrors()['recipientName']) {
+            <p class="mt-1 text-xs text-red-600">{{ serverFieldErrors()['recipientName'] }}</p>
+          }
         </div>
         <div>
           <label for="phoneNumber" class="block text-sm font-medium text-slate-700 mb-1.5">
@@ -62,12 +76,26 @@
             id="phoneNumber"
             type="tel"
             [(ngModel)]="form.phoneNumber"
+            #phoneRef="ngModel"
             name="phoneNumber"
             required
+            minlength="9"
             autocomplete="tel"
             placeholder="08X-XXX-XXXX"
+            [class.input-error]="(phoneRef.invalid && (phoneRef.touched || submitted)) || serverFieldErrors()['phoneNumber']"
             class="block w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none"
           />
+          @if (phoneRef.invalid && (phoneRef.touched || submitted)) {
+            <p class="mt-1 text-xs text-red-600">
+              @if (phoneRef.errors?.['required']) {
+                Phone number is required.
+              } @else if (phoneRef.errors?.['minlength']) {
+                Phone number must be at least 9 characters.
+              }
+            </p>
+          } @else if (serverFieldErrors()['phoneNumber']) {
+            <p class="mt-1 text-xs text-red-600">{{ serverFieldErrors()['phoneNumber'] }}</p>
+          }
         </div>
       </div>
     </div>
@@ -84,12 +112,19 @@
             id="line1"
             type="text"
             [(ngModel)]="form.line1"
+            #line1Ref="ngModel"
             name="line1"
             required
             autocomplete="address-line1"
             placeholder="House number, street, building"
+            [class.input-error]="(line1Ref.invalid && (line1Ref.touched || submitted)) || serverFieldErrors()['line1']"
             class="block w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none"
           />
+          @if (line1Ref.invalid && (line1Ref.touched || submitted)) {
+            <p class="mt-1 text-xs text-red-600">Address line 1 is required.</p>
+          } @else if (serverFieldErrors()['line1']) {
+            <p class="mt-1 text-xs text-red-600">{{ serverFieldErrors()['line1'] }}</p>
+          }
         </div>
 
         <div>
@@ -117,11 +152,16 @@
               id="subdistrict"
               type="text"
               [(ngModel)]="form.subdistrict"
+              #subdistrictRef="ngModel"
               name="subdistrict"
               required
               placeholder="Subdistrict / Tambon"
+              [class.input-error]="subdistrictRef.invalid && (subdistrictRef.touched || submitted)"
               class="block w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none"
             />
+            @if (subdistrictRef.invalid && (subdistrictRef.touched || submitted)) {
+              <p class="mt-1 text-xs text-red-600">Subdistrict is required.</p>
+            }
           </div>
           <div>
             <label for="district" class="block text-sm font-medium text-slate-700 mb-1.5">
@@ -131,11 +171,16 @@
               id="district"
               type="text"
               [(ngModel)]="form.district"
+              #districtRef="ngModel"
               name="district"
               required
               placeholder="District / Amphoe"
+              [class.input-error]="districtRef.invalid && (districtRef.touched || submitted)"
               class="block w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none"
             />
+            @if (districtRef.invalid && (districtRef.touched || submitted)) {
+              <p class="mt-1 text-xs text-red-600">District is required.</p>
+            }
           </div>
         </div>
 
@@ -148,11 +193,16 @@
               id="province"
               type="text"
               [(ngModel)]="form.province"
+              #provinceRef="ngModel"
               name="province"
               required
               placeholder="Province"
+              [class.input-error]="provinceRef.invalid && (provinceRef.touched || submitted)"
               class="block w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none"
             />
+            @if (provinceRef.invalid && (provinceRef.touched || submitted)) {
+              <p class="mt-1 text-xs text-red-600">Province is required.</p>
+            }
           </div>
           <div>
             <label for="postalCode" class="block text-sm font-medium text-slate-700 mb-1.5">
@@ -162,12 +212,26 @@
               id="postalCode"
               type="text"
               [(ngModel)]="form.postalCode"
+              #postalRef="ngModel"
               name="postalCode"
               required
+              minlength="4"
               autocomplete="postal-code"
               placeholder="10XXX"
+              [class.input-error]="(postalRef.invalid && (postalRef.touched || submitted)) || serverFieldErrors()['postalCode']"
               class="block w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none"
             />
+            @if (postalRef.invalid && (postalRef.touched || submitted)) {
+              <p class="mt-1 text-xs text-red-600">
+                @if (postalRef.errors?.['required']) {
+                  Postal code is required.
+                } @else if (postalRef.errors?.['minlength']) {
+                  Postal code must be at least 4 characters.
+                }
+              </p>
+            } @else if (serverFieldErrors()['postalCode']) {
+              <p class="mt-1 text-xs text-red-600">{{ serverFieldErrors()['postalCode'] }}</p>
+            }
           </div>
         </div>
       </div>

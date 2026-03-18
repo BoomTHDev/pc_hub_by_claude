@@ -20,12 +20,18 @@ export class Register {
   email = '';
   phoneNumber = '';
   password = '';
+  submitted = false;
   readonly loading = signal(false);
   readonly errorMessage = signal('');
+  readonly serverFieldErrors = signal<Record<string, string>>({});
 
-  onSubmit() {
+  onSubmit(form: { valid?: boolean | null }) {
+    this.submitted = true;
+    if (!form.valid) return;
+
     this.loading.set(true);
     this.errorMessage.set('');
+    this.serverFieldErrors.set({});
 
     this.auth
       .register({
@@ -44,7 +50,11 @@ export class Register {
           this.loading.set(false);
           const body = extractErrorBody(err.error);
           if (err.status === 409 && body.code === 'EMAIL_TAKEN') {
-            this.errorMessage.set('This email is already registered.');
+            this.serverFieldErrors.set({ email: 'This email is already registered.' });
+            this.errorMessage.set('Please fix the errors below.');
+          } else if (body.fieldErrors) {
+            this.serverFieldErrors.set(body.fieldErrors);
+            this.errorMessage.set('Please fix the errors below.');
           } else if (err.status === 400) {
             this.errorMessage.set(body.message ?? 'Please check your input.');
           } else {

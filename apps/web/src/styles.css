@@ -1,6 +1,28 @@
 @import 'tailwindcss';
 @source "./app";
 
+/* === Design System Foundation === */
+
+/* Custom properties for design tokens */
+:root {
+  /* Elevation system */
+  --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  --shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+
+  /* Brand gradients */
+  --gradient-brand: linear-gradient(135deg, rgb(79 70 229) 0%, rgb(124 58 237) 100%);
+  --gradient-brand-subtle: linear-gradient(135deg, rgb(238 242 255) 0%, rgb(243 232 255) 100%);
+
+  /* Animation easing */
+  --ease-out-cubic: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-in-out-cubic: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-spring: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
 /* Global foundation */
 html {
   scroll-behavior: smooth;
@@ -9,22 +31,241 @@ html {
 body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
-/* Focus ring baseline for keyboard accessibility */
+/* Enhanced focus ring for keyboard accessibility */
 *:focus-visible {
-  outline: 2px solid #6366f1; /* indigo-500 */
+  outline: 2px solid rgb(99 102 241); /* indigo-500 */
   outline-offset: 2px;
-  border-radius: 4px;
+  border-radius: 6px;
+  box-shadow: 0 0 0 4px rgb(99 102 241 / 0.1);
 }
 
-/* Consistent transition baseline for interactive elements */
+/* Premium transitions for interactive elements */
 a,
 button,
 input,
 select,
+textarea,
+[role='button'] {
+  transition-property: color, background-color, border-color, box-shadow, transform, opacity;
+  transition-duration: 200ms;
+  transition-timing-function: var(--ease-out-cubic);
+}
+
+/* Enhanced button hover states */
+button:hover,
+[role='button']:hover {
+  transform: translateY(-1px);
+}
+
+/* Premium form field styling */
+input,
+select,
 textarea {
-  transition-property: color, background-color, border-color, box-shadow;
-  transition-duration: 150ms;
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 8px;
+  box-shadow: var(--shadow-xs);
+  transition: all 200ms var(--ease-out-cubic);
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  box-shadow:
+    0 0 0 3px rgb(99 102 241 / 0.1),
+    var(--shadow-sm);
+  border-color: rgb(99 102 241);
+}
+
+/* Enhanced form validation styling */
+input.ng-invalid.ng-touched,
+select.ng-invalid.ng-touched,
+textarea.ng-invalid.ng-touched,
+input.input-error,
+select.input-error,
+textarea.input-error {
+  border-color: rgb(239 68 68);
+  background-color: rgb(254 242 242);
+}
+
+input.ng-invalid.ng-touched:focus,
+select.ng-invalid.ng-touched:focus,
+textarea.ng-invalid.ng-touched:focus,
+input.input-error:focus,
+select.input-error:focus,
+textarea.input-error:focus {
+  border-color: rgb(239 68 68);
+  --tw-ring-color: rgb(239 68 68 / 0.2);
+  box-shadow:
+    0 0 0 3px rgb(239 68 68 / 0.1),
+    var(--shadow-sm);
+}
+
+/* Premium card elevation system */
+.card-elevation-1 {
+  box-shadow: var(--shadow-sm);
+  border: 1px solid rgb(226 232 240);
+}
+
+.card-elevation-2 {
+  box-shadow: var(--shadow-md);
+  border: 1px solid rgb(226 232 240);
+}
+
+.card-elevation-3 {
+  box-shadow: var(--shadow-lg);
+  border: 1px solid rgb(226 232 240);
+}
+
+/* Hover elevation for cards */
+.card-hover {
+  transition:
+    box-shadow 200ms var(--ease-out-cubic),
+    transform 200ms var(--ease-out-cubic);
+}
+
+.card-hover:hover {
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-2px);
+}
+
+/* Premium button styling */
+.btn-primary {
+  background: var(--gradient-brand);
+  border: none;
+  box-shadow: var(--shadow-sm);
+  transition: all 200ms var(--ease-out-cubic);
+}
+
+.btn-primary:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+  box-shadow: var(--shadow-sm);
+}
+
+/* Loading shimmer animation */
+@keyframes shimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+.shimmer {
+  background: linear-gradient(
+    90deg,
+    rgb(226 232 240) 0%,
+    rgb(241 245 249) 50%,
+    rgb(226 232 240) 100%
+  );
+  background-size: 1000px 100%;
+  animation: shimmer 2s infinite;
+}
+
+/* Enhanced typography */
+.text-display {
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -0.025em;
+}
+
+.text-heading {
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.015em;
+}
+
+.text-subheading {
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.text-body {
+  font-weight: 400;
+  line-height: 1.6;
+}
+
+.text-caption {
+  font-weight: 500;
+  line-height: 1.4;
+  font-size: 0.875rem;
+}
+
+/* Premium status indicators */
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: 8px;
+}
+
+.status-dot-success {
+  background-color: rgb(34 197 94);
+  box-shadow: 0 0 0 2px rgb(34 197 94 / 0.2);
+}
+
+.status-dot-warning {
+  background-color: rgb(245 158 11);
+  box-shadow: 0 0 0 2px rgb(245 158 11 / 0.2);
+}
+
+.status-dot-error {
+  background-color: rgb(239 68 68);
+  box-shadow: 0 0 0 2px rgb(239 68 68 / 0.2);
+}
+
+.status-dot-info {
+  background-color: rgb(59 130 246);
+  box-shadow: 0 0 0 2px rgb(59 130 246 / 0.2);
+}
+
+/* Enhanced skeleton loading */
+.skeleton-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* Animation utilities */
+.animate-fade-in {
+  animation: fadeIn 0.2s ease-out;
+}
+
+.animate-scale-in {
+  animation: scaleIn 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }

@@ -70,7 +70,7 @@ describe('ProductCard', () => {
     fixture.detectChanges();
 
     const el: HTMLElement = fixture.nativeElement;
-    expect(el.textContent).toContain('Out of stock');
+    expect(el.textContent).toContain('Out of Stock');
   });
 
   it('links to product detail page', () => {

@@ -7,6 +7,7 @@ import {
   type AdminCategory,
   type AdminBrand,
 } from '../../../core/services/backoffice-catalog.service';
+import { extractErrorBody } from '../../../shared/utils/error.utils';
 import { AlertBanner } from '../../../shared/components/alert-banner/alert-banner';
 import { ConfirmDialog } from '../../../shared/components/confirm-dialog/confirm-dialog';
 
@@ -25,6 +26,8 @@ export class BoProductFormPage implements OnInit {
   protected readonly saving = signal(false);
   protected readonly uploading = signal(false);
   protected readonly errorMsg = signal('');
+  protected readonly serverFieldErrors = signal<Record<string, string>>({});
+  protected submitted = false;
   protected readonly product = signal<AdminProductDetail | null>(null);
   protected readonly categories = signal<AdminCategory[]>([]);
   protected readonly brands = signal<AdminBrand[]>([]);
@@ -54,9 +57,13 @@ export class BoProductFormPage implements OnInit {
     this.loadDropdowns();
   }
 
-  onSave() {
+  onSave(formRef: { valid?: boolean | null }) {
+    this.submitted = true;
+    if (!formRef.valid) return;
+
     this.saving.set(true);
     this.errorMsg.set('');
+    this.serverFieldErrors.set({});
 
     const body: Record<string, unknown> = {
       name: this.form.name,
@@ -70,17 +77,24 @@ export class BoProductFormPage implements OnInit {
     };
 
     const currentProduct = this.product();
-    const request = this.isEdit() && currentProduct
-      ? this.catalogService.updateProduct(currentProduct.id, body)
-      : this.catalogService.createProduct(body);
+    const request =
+      this.isEdit() && currentProduct
+        ? this.catalogService.updateProduct(currentProduct.id, body)
+        : this.catalogService.createProduct(body);
 
     request.subscribe({
       next: () => {
         this.router.navigate(['/backoffice/products']);
       },
       error: (err) => {
-        this.errorMsg.set(err.error?.message ?? 'Failed to save product');
         this.saving.set(false);
+        const body = extractErrorBody(err.error);
+        if (body.fieldErrors) {
+          this.serverFieldErrors.set(body.fieldErrors);
+          this.errorMsg.set('Please fix the errors below.');
+        } else {
+          this.errorMsg.set(body.message ?? 'Failed to save product');
+        }
       },
     });
   }

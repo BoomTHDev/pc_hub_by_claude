@@ -107,7 +107,7 @@ describe('ProductList', () => {
     fixture.detectChanges();
 
     const el: HTMLElement = fixture.nativeElement;
-    const skeletons = el.querySelectorAll('.animate-pulse');
+    const skeletons = el.querySelectorAll('.shimmer');
     expect(skeletons.length).toBeGreaterThan(0);
 
     // Cleanup pending requests

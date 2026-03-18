@@ -3,6 +3,7 @@ import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 import { AuthService } from '../../../core/services/auth.service';
+import { extractErrorBody } from '../../../shared/utils/error.utils';
 import { AlertBanner } from '../../../shared/components/alert-banner/alert-banner';
 
 @Component({
@@ -16,12 +17,18 @@ export class Login {
 
   email = '';
   password = '';
+  submitted = false;
   readonly loading = signal(false);
   readonly errorMessage = signal('');
+  readonly serverFieldErrors = signal<Record<string, string>>({});
 
-  onSubmit() {
+  onSubmit(form: { valid?: boolean | null }) {
+    this.submitted = true;
+    if (!form.valid) return;
+
     this.loading.set(true);
     this.errorMessage.set('');
+    this.serverFieldErrors.set({});
 
     this.auth.login({ email: this.email, password: this.password }).subscribe({
       next: () => {
@@ -30,11 +37,15 @@ export class Login {
       },
       error: (err: HttpErrorResponse) => {
         this.loading.set(false);
-        const message =
-          err.status === 401
-            ? 'Invalid email or password'
-            : 'Something went wrong. Please try again.';
-        this.errorMessage.set(message);
+        const body = extractErrorBody(err.error);
+        if (err.status === 401) {
+          this.errorMessage.set('Invalid email or password.');
+        } else if (body.fieldErrors) {
+          this.serverFieldErrors.set(body.fieldErrors);
+          this.errorMessage.set('Please fix the errors below.');
+        } else {
+          this.errorMessage.set(body.message ?? 'Something went wrong. Please try again.');
+        }
       },
     });
   }

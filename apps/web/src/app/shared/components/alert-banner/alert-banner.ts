@@ -2,22 +2,30 @@ import { Component, computed, input, output, signal } from '@angular/core';
 
 type AlertType = 'error' | 'warning' | 'success' | 'info';
 
-const TYPE_STYLES: Record<AlertType, { container: string; icon: string }> = {
+const TYPE_STYLES: Record<AlertType, { container: string; icon: string; iconBg: string }> = {
   error: {
-    container: 'bg-red-50 border-red-200 text-red-800',
-    icon: 'text-red-500',
+    container:
+      'bg-gradient-to-r from-red-50 to-red-100/50 border-l-4 border-red-500 text-red-800 shadow-sm',
+    icon: 'text-red-600',
+    iconBg: 'bg-red-100',
   },
   warning: {
-    container: 'bg-amber-50 border-amber-200 text-amber-800',
-    icon: 'text-amber-500',
+    container:
+      'bg-gradient-to-r from-amber-50 to-amber-100/50 border-l-4 border-amber-500 text-amber-800 shadow-sm',
+    icon: 'text-amber-600',
+    iconBg: 'bg-amber-100',
   },
   success: {
-    container: 'bg-green-50 border-green-200 text-green-800',
-    icon: 'text-green-500',
+    container:
+      'bg-gradient-to-r from-emerald-50 to-emerald-100/50 border-l-4 border-emerald-500 text-emerald-800 shadow-sm',
+    icon: 'text-emerald-600',
+    iconBg: 'bg-emerald-100',
   },
   info: {
-    container: 'bg-blue-50 border-blue-200 text-blue-800',
-    icon: 'text-blue-500',
+    container:
+      'bg-gradient-to-r from-blue-50 to-blue-100/50 border-l-4 border-blue-500 text-blue-800 shadow-sm',
+    icon: 'text-blue-600',
+    iconBg: 'bg-blue-100',
   },
 };
 

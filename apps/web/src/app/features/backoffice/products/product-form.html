@@ -22,7 +22,7 @@
   } @else {
     <div class="space-y-6">
       <!-- Form -->
-      <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+      <form #prodForm="ngForm" (ngSubmit)="onSave(prodForm)" class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
         <div class="p-6">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
             <div>
@@ -31,9 +31,18 @@
                 id="pf-name"
                 type="text"
                 [(ngModel)]="form.name"
+                #nameRef="ngModel"
+                name="name"
+                required
                 placeholder="Product name"
+                [class.input-error]="(nameRef.invalid && (nameRef.touched || submitted)) || serverFieldErrors()['name']"
                 class="w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
               />
+              @if (nameRef.invalid && (nameRef.touched || submitted)) {
+                <p class="mt-1 text-xs text-red-600">Product name is required.</p>
+              } @else if (serverFieldErrors()['name']) {
+                <p class="mt-1 text-xs text-red-600">{{ serverFieldErrors()['name'] }}</p>
+              }
             </div>
             <div>
               <label for="pf-sku" class="block text-sm font-medium text-slate-700 mb-1.5">SKU</label>
@@ -41,9 +50,18 @@
                 id="pf-sku"
                 type="text"
                 [(ngModel)]="form.sku"
+                #skuRef="ngModel"
+                name="sku"
+                required
                 placeholder="e.g. CPU-AMD-5800X"
+                [class.input-error]="(skuRef.invalid && (skuRef.touched || submitted)) || serverFieldErrors()['sku']"
                 class="w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm font-mono focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
               />
+              @if (skuRef.invalid && (skuRef.touched || submitted)) {
+                <p class="mt-1 text-xs text-red-600">SKU is required.</p>
+              } @else if (serverFieldErrors()['sku']) {
+                <p class="mt-1 text-xs text-red-600">{{ serverFieldErrors()['sku'] }}</p>
+              }
             </div>
             <div>
               <label for="pf-price" class="block text-sm font-medium text-slate-700 mb-1.5">Price (THB)</label>
@@ -51,10 +69,14 @@
                 id="pf-price"
                 type="number"
                 [(ngModel)]="form.price"
+                name="price"
                 min="0"
                 step="0.01"
                 class="w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
               />
+              @if (serverFieldErrors()['price']) {
+                <p class="mt-1 text-xs text-red-600">{{ serverFieldErrors()['price'] }}</p>
+              }
             </div>
             <div>
               <label for="pf-stock" class="block text-sm font-medium text-slate-700 mb-1.5">Stock</label>
@@ -62,6 +84,7 @@
                 id="pf-stock"
                 type="number"
                 [(ngModel)]="form.stock"
+                name="stock"
                 min="0"
                 class="w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
               />
@@ -71,6 +94,7 @@
               <select
                 id="pf-category"
                 [(ngModel)]="form.categoryId"
+                name="categoryId"
                 class="w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
               >
                 <option [ngValue]="0">Select category</option>
@@ -78,12 +102,16 @@
                   <option [ngValue]="cat.id">{{ cat.name }}</option>
                 }
               </select>
+              @if (serverFieldErrors()['categoryId']) {
+                <p class="mt-1 text-xs text-red-600">{{ serverFieldErrors()['categoryId'] }}</p>
+              }
             </div>
             <div>
               <label for="pf-brand" class="block text-sm font-medium text-slate-700 mb-1.5">Brand</label>
               <select
                 id="pf-brand"
                 [(ngModel)]="form.brandId"
+                name="brandId"
                 class="w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
               >
                 <option [ngValue]="0">Select brand</option>
@@ -91,6 +119,9 @@
                   <option [ngValue]="brand.id">{{ brand.name }}</option>
                 }
               </select>
+              @if (serverFieldErrors()['brandId']) {
+                <p class="mt-1 text-xs text-red-600">{{ serverFieldErrors()['brandId'] }}</p>
+              }
             </div>
             <div>
               <label for="pf-warranty" class="block text-sm font-medium text-slate-700 mb-1.5">Warranty (months)</label>
@@ -98,6 +129,7 @@
                 id="pf-warranty"
                 type="number"
                 [(ngModel)]="form.warrantyMonths"
+                name="warrantyMonths"
                 min="0"
                 placeholder="0"
                 class="w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
@@ -108,10 +140,17 @@
               <textarea
                 id="pf-desc"
                 [(ngModel)]="form.description"
+                #descRef="ngModel"
+                name="description"
+                required
                 rows="4"
                 placeholder="Product description..."
+                [class.input-error]="descRef.invalid && (descRef.touched || submitted)"
                 class="w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
               ></textarea>
+              @if (descRef.invalid && (descRef.touched || submitted)) {
+                <p class="mt-1 text-xs text-red-600">Description is required.</p>
+              }
             </div>
           </div>
         </div>
@@ -124,7 +163,7 @@
 
         <div class="bg-slate-50 border-t border-slate-200 px-6 py-4 flex items-center gap-3">
           <button
-            (click)="onSave()"
+            type="submit"
             [disabled]="saving()"
             class="inline-flex items-center px-5 py-2.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-500 text-sm font-semibold shadow-sm cursor-pointer disabled:opacity-50"
           >
@@ -145,7 +184,7 @@
             Cancel
           </a>
         </div>
-      </div>
+      </form>
 
       <!-- Images (edit only) -->
       @if (isEdit() && product(); as p) {

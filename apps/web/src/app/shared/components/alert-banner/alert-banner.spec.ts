@@ -23,7 +23,7 @@ describe('AlertBanner', () => {
     fixture.detectChanges();
 
     const alert = fixture.nativeElement.querySelector('[role="alert"]') as HTMLElement;
-    expect(alert.classList.contains('bg-red-50')).toBe(true);
+    expect(alert.classList.contains('from-red-50')).toBe(true);
   });
 
   it('applies success styling when type is success', () => {
@@ -33,7 +33,7 @@ describe('AlertBanner', () => {
     fixture.detectChanges();
 
     const alert = fixture.nativeElement.querySelector('[role="alert"]') as HTMLElement;
-    expect(alert.classList.contains('bg-green-50')).toBe(true);
+    expect(alert.classList.contains('from-emerald-50')).toBe(true);
   });
 
   it('shows dismiss button when dismissible', () => {

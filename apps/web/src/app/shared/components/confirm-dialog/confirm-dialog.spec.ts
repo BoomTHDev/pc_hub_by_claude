@@ -85,7 +85,7 @@ describe('ConfirmDialog', () => {
     fixture.componentInstance.show();
     fixture.detectChanges();
 
-    const icon = fixture.nativeElement.querySelector('.bg-red-100');
+    const icon = fixture.nativeElement.querySelector('.from-red-100');
     expect(icon).toBeTruthy();
   });
 });

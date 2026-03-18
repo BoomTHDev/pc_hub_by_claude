@@ -2,6 +2,7 @@ import { Component, inject, signal, OnInit } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { BackofficeUserService } from '../../../core/services/backoffice-user.service';
+import { extractErrorBody } from '../../../shared/utils/error.utils';
 import { AlertBanner } from '../../../shared/components/alert-banner/alert-banner';
 
 @Component({
@@ -16,8 +17,10 @@ export class BoUserFormPage implements OnInit {
 
   protected readonly saving = signal(false);
   protected readonly errorMsg = signal('');
+  protected readonly serverFieldErrors = signal<Record<string, string>>({});
   protected readonly roleLabel = signal('Staff');
   protected readonly validRole = signal(false);
+  protected submitted = false;
 
   private role: 'staff' | 'admin' = 'staff';
 
@@ -42,41 +45,39 @@ export class BoUserFormPage implements OnInit {
     }
   }
 
-  onSubmit() {
-    if (!this.form.firstName.trim() || !this.form.lastName.trim()) {
-      this.errorMsg.set('First name and last name are required');
-      return;
-    }
-    if (!this.form.email.trim()) {
-      this.errorMsg.set('Email is required');
-      return;
-    }
-    if (!this.form.phoneNumber.trim() || this.form.phoneNumber.trim().length < 9) {
-      this.errorMsg.set('Phone number must be at least 9 characters');
-      return;
-    }
-    if (this.form.password.length < 8) {
-      this.errorMsg.set('Password must be at least 8 characters');
-      return;
-    }
+  onSubmit(formRef: { valid?: boolean | null }) {
+    this.submitted = true;
+    if (!formRef.valid) return;
 
     this.saving.set(true);
     this.errorMsg.set('');
+    this.serverFieldErrors.set({});
 
-    this.userService.createUser(this.role, {
-      firstName: this.form.firstName.trim(),
-      lastName: this.form.lastName.trim(),
-      email: this.form.email.trim(),
-      phoneNumber: this.form.phoneNumber.trim(),
-      password: this.form.password,
-    }).subscribe({
-      next: () => {
-        this.router.navigate(['/backoffice/users']);
-      },
-      error: (err) => {
-        this.errorMsg.set(err.error?.message ?? 'Failed to create user');
-        this.saving.set(false);
-      },
-    });
+    this.userService
+      .createUser(this.role, {
+        firstName: this.form.firstName.trim(),
+        lastName: this.form.lastName.trim(),
+        email: this.form.email.trim(),
+        phoneNumber: this.form.phoneNumber.trim(),
+        password: this.form.password,
+      })
+      .subscribe({
+        next: () => {
+          this.router.navigate(['/backoffice/users']);
+        },
+        error: (err) => {
+          this.saving.set(false);
+          const body = extractErrorBody(err.error);
+          if (body.code === 'EMAIL_TAKEN') {
+            this.serverFieldErrors.set({ email: 'This email is already registered.' });
+            this.errorMsg.set('Please fix the errors below.');
+          } else if (body.fieldErrors) {
+            this.serverFieldErrors.set(body.fieldErrors);
+            this.errorMsg.set('Please fix the errors below.');
+          } else {
+            this.errorMsg.set(body.message ?? 'Failed to create user');
+          }
+        },
+      });
   }
 }

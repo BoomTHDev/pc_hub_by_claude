@@ -33,8 +33,8 @@ describe('StatusBadge', () => {
     fixture.detectChanges();
 
     const badge = fixture.nativeElement.querySelector('span') as HTMLSpanElement;
-    expect(badge.classList.contains('bg-green-50')).toBe(true);
-    expect(badge.classList.contains('text-green-700')).toBe(true);
+    expect(badge.classList.contains('from-emerald-50')).toBe(true);
+    expect(badge.classList.contains('text-emerald-700')).toBe(true);
   });
 
   it('falls back to neutral style for unknown status', () => {

@@ -20,6 +20,8 @@ export class AddressForm implements OnInit {
   readonly isEdit = signal(false);
   readonly saving = signal(false);
   readonly errorMessage = signal('');
+  readonly serverFieldErrors = signal<Record<string, string>>({});
+  submitted = false;
 
   form: CreateAddressPayload & { line2: string } = {
     label: '',
@@ -45,9 +47,13 @@ export class AddressForm implements OnInit {
     }
   }
 
-  onSubmit() {
+  onSubmit(form: { valid?: boolean | null }) {
+    this.submitted = true;
+    if (!form.valid) return;
+
     this.saving.set(true);
     this.errorMessage.set('');
+    this.serverFieldErrors.set({});
 
     const payload: CreateAddressPayload = {
       ...this.form,
@@ -66,7 +72,12 @@ export class AddressForm implements OnInit {
       error: (err: HttpErrorResponse) => {
         this.saving.set(false);
         const body = extractErrorBody(err.error);
-        this.errorMessage.set(body.message ?? 'Something went wrong.');
+        if (body.fieldErrors) {
+          this.serverFieldErrors.set(body.fieldErrors);
+          this.errorMessage.set('Please fix the errors below.');
+        } else {
+          this.errorMessage.set(body.message ?? 'Something went wrong.');
+        }
       },
     });
   }

@@ -41,6 +41,6 @@ describe('DataTable', () => {
 
     const wrapper = fixture.nativeElement.querySelector('.rounded-xl') as HTMLElement;
     expect(wrapper).toBeTruthy();
-    expect(wrapper.classList.contains('shadow-sm')).toBe(true);
+    expect(wrapper.classList.contains('shadow-md')).toBe(true);
   });
 });
