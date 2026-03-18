@@ -2,7 +2,6 @@ import express from 'express';
 import helmet from 'helmet';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
-import rateLimit from 'express-rate-limit';
 import { env } from './config/env.js';
 import { requestLogger } from './middleware/request-logger.js';
 import { notFoundHandler } from './middleware/not-found.js';
@@ -30,23 +29,6 @@ app.use(
     credentials: true,
   }),
 );
-
-// Rate limiting — global baseline (disabled in test)
-if (env.NODE_ENV !== 'test') {
-  app.use(
-    rateLimit({
-      windowMs: 15 * 60 * 1000,
-      limit: 100,
-      standardHeaders: 'draft-7',
-      legacyHeaders: false,
-      message: {
-        success: false,
-        message: 'Too many requests, please try again later',
-        code: 'RATE_LIMIT_EXCEEDED',
-      },
-    }),
-  );
-}
 
 // Body parsing with size limit
 app.use(express.json({ limit: '10kb' }));
