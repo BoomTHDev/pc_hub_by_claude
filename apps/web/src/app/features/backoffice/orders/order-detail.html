@@ -7,21 +7,30 @@
   </a>
 
   @if (loading()) {
-    <div class="space-y-4 animate-pulse">
-      <div class="h-8 w-64 bg-slate-200 rounded"></div>
-      <div class="bg-white rounded-xl border border-slate-200 p-5 space-y-3">
-        <div class="h-4 w-48 bg-slate-200 rounded"></div>
-        <div class="h-4 w-32 bg-slate-200 rounded"></div>
+    <div class="space-y-4">
+      <div class="flex items-center gap-3">
+        <div class="h-8 w-44 bg-slate-200 rounded-lg shimmer"></div>
+        <div class="h-6 w-24 bg-slate-200 rounded-full shimmer"></div>
+      </div>
+      <div class="bg-white rounded-2xl border border-slate-200/80 p-5 space-y-3">
+        <div class="h-4 w-48 bg-slate-200 rounded-full shimmer"></div>
+        <div class="h-4 w-32 bg-slate-200 rounded-full shimmer"></div>
+        <div class="h-4 w-56 bg-slate-200 rounded-full shimmer"></div>
+      </div>
+      <div class="bg-white rounded-2xl border border-slate-200/80 p-5 space-y-2">
+        <div class="h-5 w-24 bg-slate-200 rounded-full shimmer"></div>
+        <div class="h-3 w-full bg-slate-200 rounded-full shimmer"></div>
+        <div class="h-3 w-3/4 bg-slate-200 rounded-full shimmer"></div>
       </div>
     </div>
   } @else if (order(); as o) {
-    <div class="space-y-6">
+    <div class="space-y-5">
       <!-- Header -->
       <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <div class="flex items-center gap-3">
+          <div class="flex items-center gap-3 flex-wrap">
             <h1 class="text-2xl font-bold text-slate-900">Order</h1>
-            <span class="inline-flex items-center px-2.5 py-1 text-sm font-mono font-semibold bg-slate-100 text-slate-700 rounded-lg">
+            <span class="inline-flex items-center px-3 py-1 text-sm font-mono font-bold bg-indigo-50 text-indigo-700 rounded-xl border border-indigo-100">
               {{ o.orderNumber }}
             </span>
           </div>
@@ -32,71 +41,80 @@
 
       <!-- Approve / Reject Actions -->
       @if (canApprove()) {
-        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 flex items-center gap-3">
-          <span class="text-sm font-medium text-slate-600">Review this order:</span>
-          <button
-            (click)="onApprove()"
-            [disabled]="actionLoading()"
-            class="inline-flex items-center px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-500 text-sm font-semibold shadow-sm cursor-pointer disabled:opacity-50"
-          >
-            Approve
-          </button>
-          <button
-            (click)="showRejectForm.set(true)"
-            [disabled]="actionLoading()"
-            class="inline-flex items-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-500 text-sm font-semibold shadow-sm cursor-pointer disabled:opacity-50"
-          >
-            Reject
-          </button>
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-5">
+          <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Review Order</p>
+          <div class="flex items-center gap-3">
+            <button
+              (click)="onApprove()"
+              [disabled]="actionLoading()"
+              class="inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-emerald-500 cursor-pointer disabled:opacity-50 transition-colors"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
+              Approve
+            </button>
+            <button
+              (click)="showRejectForm.set(true)"
+              [disabled]="actionLoading()"
+              class="inline-flex items-center gap-1.5 rounded-xl bg-red-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-500 cursor-pointer disabled:opacity-50 transition-colors"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" /></svg>
+              Reject
+            </button>
+          </div>
         </div>
       }
 
       <!-- Advance Status Actions -->
       @if (canAdvance()) {
-        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 flex items-center gap-3">
-          <span class="text-sm font-medium text-slate-600">Advance status:</span>
-          @if (o.status === 'APPROVED' || o.status === 'PROCESSING') {
-            <button
-              (click)="onAdvance(o.status === 'APPROVED' ? 'PROCESSING' : 'SHIPPED')"
-              [disabled]="actionLoading()"
-              class="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-500 text-sm font-semibold shadow-sm cursor-pointer disabled:opacity-50"
-            >
-              {{ o.status === 'APPROVED' ? 'Mark Processing' : 'Mark Shipped' }}
-            </button>
-          }
-          @if (o.status === 'SHIPPED') {
-            <button
-              (click)="onAdvance('DELIVERED')"
-              [disabled]="actionLoading()"
-              class="inline-flex items-center px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-500 text-sm font-semibold shadow-sm cursor-pointer disabled:opacity-50"
-            >
-              Mark Delivered
-            </button>
-          }
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-5">
+          <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Advance Status</p>
+          <div class="flex items-center gap-3">
+            @if (o.status === 'APPROVED' || o.status === 'PROCESSING') {
+              <button
+                (click)="onAdvance(o.status === 'APPROVED' ? 'PROCESSING' : 'SHIPPED')"
+                [disabled]="actionLoading()"
+                class="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:from-indigo-500 hover:to-violet-500 cursor-pointer disabled:opacity-50 transition-all duration-200"
+              >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" /></svg>
+                {{ o.status === 'APPROVED' ? 'Mark Processing' : 'Mark Shipped' }}
+              </button>
+            }
+            @if (o.status === 'SHIPPED') {
+              <button
+                (click)="onAdvance('DELIVERED')"
+                [disabled]="actionLoading()"
+                class="inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-emerald-500 cursor-pointer disabled:opacity-50 transition-colors"
+              >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
+                Mark Delivered
+              </button>
+            }
+          </div>
         </div>
       }
 
       <!-- Reject Form -->
       @if (showRejectForm()) {
-        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
-          <h3 class="text-sm font-semibold text-slate-700 mb-2">Rejection Reason</h3>
+        <div class="bg-red-50 rounded-2xl border border-red-200 p-5">
+          <h3 class="text-sm font-semibold text-red-800 mb-3">Rejection Reason</h3>
           <textarea
             [(ngModel)]="rejectReason"
             rows="3"
-            class="w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+            resize-none
+            class="w-full rounded-xl border border-red-200 px-3.5 py-2.5 text-sm bg-white text-slate-900 focus:border-red-400 focus:ring-2 focus:ring-red-400/20 focus:outline-none transition-colors resize-none"
             placeholder="Enter reason for rejection..."
           ></textarea>
           <div class="flex gap-2 mt-3">
             <button
               (click)="onReject()"
               [disabled]="!rejectReason.trim() || actionLoading()"
-              class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-500 text-sm font-semibold cursor-pointer disabled:opacity-50"
+              class="rounded-xl bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-500 cursor-pointer disabled:opacity-50 transition-colors"
             >
               Confirm Reject
             </button>
             <button
               (click)="showRejectForm.set(false)"
-              class="px-4 py-2 border border-slate-300 bg-white text-slate-700 rounded-lg hover:bg-slate-50 text-sm font-semibold cursor-pointer"
+              class="rounded-xl border border-red-200 bg-white px-4 py-2 text-sm font-semibold text-red-700 hover:bg-red-50 cursor-pointer transition-colors"
             >
               Cancel
             </button>
@@ -109,30 +127,30 @@
       }
 
       <!-- Customer -->
-      <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
-        <h2 class="text-base font-semibold text-slate-800 mb-3">Customer</h2>
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm">
+      <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-5">
+        <h2 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-4">Customer</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
           <div>
-            <p class="text-slate-500">Name</p>
-            <p class="font-medium text-slate-700">{{ o.customer.firstName }} {{ o.customer.lastName }}</p>
+            <p class="text-xs text-slate-400 uppercase tracking-wide mb-1">Name</p>
+            <p class="font-semibold text-slate-700">{{ o.customer.firstName }} {{ o.customer.lastName }}</p>
           </div>
           <div>
-            <p class="text-slate-500">Email</p>
+            <p class="text-xs text-slate-400 uppercase tracking-wide mb-1">Email</p>
             <p class="font-medium text-slate-700">{{ o.customer.email }}</p>
           </div>
           <div>
-            <p class="text-slate-500">Phone</p>
+            <p class="text-xs text-slate-400 uppercase tracking-wide mb-1">Phone</p>
             <p class="font-medium text-slate-700">{{ o.customer.phoneNumber }}</p>
           </div>
         </div>
       </div>
 
       <!-- Items -->
-      <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+      <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 overflow-hidden">
         <div class="px-5 pt-5 pb-3">
-          <h2 class="text-base font-semibold text-slate-800">Items</h2>
+          <h2 class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Items</h2>
         </div>
-        <table class="min-w-full divide-y divide-slate-200">
+        <table class="min-w-full divide-y divide-slate-100">
           <thead class="bg-slate-50">
             <tr>
               <th class="px-5 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Product</th>
@@ -141,53 +159,55 @@
               <th class="px-5 py-3 text-right text-xs font-medium text-slate-500 uppercase tracking-wider">Line Total</th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-slate-100">
+          <tbody class="divide-y divide-slate-50">
             @for (item of o.items; track item.id) {
-              <tr>
-                <td class="px-5 py-3 text-sm text-slate-700">{{ getProductName(item.productSnapshot) }}</td>
+              <tr class="hover:bg-slate-50 transition-colors">
+                <td class="px-5 py-3 text-sm font-medium text-slate-700">{{ getProductName(item.productSnapshot) }}</td>
                 <td class="px-5 py-3 text-sm text-right text-slate-600">{{ item.quantity }}</td>
                 <td class="px-5 py-3 text-sm text-right text-slate-600">{{ item.unitPrice | thaiBaht }}</td>
-                <td class="px-5 py-3 text-sm text-right font-medium text-slate-700">{{ item.lineTotal | thaiBaht }}</td>
+                <td class="px-5 py-3 text-sm text-right font-semibold text-slate-700">{{ item.lineTotal | thaiBaht }}</td>
               </tr>
             }
           </tbody>
         </table>
-        <div class="border-t border-slate-200 bg-slate-50 px-5 py-4 space-y-1 text-sm text-right">
+        <div class="border-t border-slate-200 bg-gradient-to-r from-slate-50 to-indigo-50/30 px-5 py-4 space-y-1.5 text-sm text-right">
           <p class="text-slate-500">Subtotal: <span class="font-medium text-slate-700">{{ o.subtotalAmount | thaiBaht }}</span></p>
           <p class="text-slate-500">Shipping: <span class="font-medium text-slate-700">{{ o.shippingAmount | thaiBaht }}</span></p>
-          <p class="text-base font-bold text-slate-900 pt-1">Total: {{ o.totalAmount | thaiBaht }}</p>
+          <p class="text-base font-bold text-indigo-600 pt-1 border-t border-slate-200 mt-1">Total: {{ o.totalAmount | thaiBaht }}</p>
         </div>
       </div>
 
       <!-- Payment -->
       @if (o.payment; as pay) {
-        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
-          <h2 class="text-base font-semibold text-slate-800 mb-3">Payment</h2>
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm mb-4">
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-5">
+          <h2 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-4">Payment</h2>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm mb-4">
             <div>
-              <p class="text-slate-500">Method</p>
-              <p class="font-medium text-slate-700">{{ pay.paymentMethod }}</p>
+              <p class="text-xs text-slate-400 uppercase tracking-wide mb-1">Method</p>
+              <p class="font-semibold text-slate-700">{{ pay.paymentMethod === 'COD' ? 'Cash on Delivery' : 'PromptPay QR' }}</p>
             </div>
             <div>
-              <p class="text-slate-500">Status</p>
+              <p class="text-xs text-slate-400 uppercase tracking-wide mb-1">Status</p>
               <div class="mt-0.5">
                 <app-status-badge [status]="pay.status" />
               </div>
             </div>
             <div>
-              <p class="text-slate-500">Amount</p>
-              <p class="font-medium text-slate-700">{{ pay.amount | thaiBaht }}</p>
+              <p class="text-xs text-slate-400 uppercase tracking-wide mb-1">Amount</p>
+              <p class="font-bold text-slate-700">{{ pay.amount | thaiBaht }}</p>
             </div>
           </div>
 
           @if (pay.slips.length > 0) {
-            <h3 class="text-sm font-semibold text-slate-700 mb-2">Payment Slips</h3>
+            <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Payment Slips</h3>
             <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
               @for (slip of pay.slips; track slip.id) {
-                <div class="border border-slate-200 rounded-lg overflow-hidden">
-                  <img [src]="slip.imageUrl" alt="Payment slip" class="w-full h-40 object-cover" />
-                  <p class="text-xs text-slate-500 px-2 py-1.5">{{ slip.uploadedAt | date:'short' }}</p>
-                </div>
+                <a [href]="slip.imageUrl" target="_blank" class="group block">
+                  <div class="border border-slate-200 rounded-xl overflow-hidden group-hover:border-indigo-400 group-hover:shadow-sm transition-all duration-150">
+                    <img [src]="slip.imageUrl" alt="Payment slip" class="w-full h-40 object-cover group-hover:scale-105 transition-transform duration-300" />
+                  </div>
+                  <p class="text-xs text-slate-400 mt-1.5 text-center">{{ slip.uploadedAt | date:'short' }}</p>
+                </a>
               }
             </div>
           }
@@ -196,18 +216,18 @@
 
       <!-- Rejection reason -->
       @if (o.rejectReason) {
-        <div class="bg-red-50 border border-red-200 rounded-xl p-5">
-          <h2 class="text-sm font-semibold text-red-800 mb-1">Rejection Reason</h2>
-          <p class="text-sm text-red-700">{{ o.rejectReason }}</p>
+        <div class="bg-red-50 border border-red-200 rounded-2xl p-5">
+          <h2 class="text-xs font-semibold text-red-700 uppercase tracking-wider mb-2">Rejection Reason</h2>
+          <p class="text-sm text-red-700 leading-relaxed">{{ o.rejectReason }}</p>
         </div>
       }
 
       <!-- Shipping Address -->
-      <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
-        <h2 class="text-base font-semibold text-slate-800 mb-3">Shipping Address</h2>
-        <div class="text-sm text-slate-700 space-y-1">
+      <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-5">
+        <h2 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-4">Shipping Address</h2>
+        <div class="text-sm text-slate-700 space-y-1.5">
           @for (entry of addressEntries(); track entry[0]) {
-            <p><span class="text-slate-500">{{ entry[0] }}:</span> {{ entry[1] }}</p>
+            <p><span class="text-slate-400 text-xs font-medium uppercase tracking-wide">{{ entry[0] }}:</span> <span class="text-slate-700 font-medium ml-1">{{ entry[1] }}</span></p>
           }
         </div>
       </div>

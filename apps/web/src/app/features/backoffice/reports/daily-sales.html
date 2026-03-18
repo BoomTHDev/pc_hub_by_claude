@@ -5,9 +5,9 @@
         <button
           (click)="onExportExcel()"
           [disabled]="exporting()"
-          class="inline-flex items-center px-4 py-2.5 bg-emerald-600 text-white rounded-lg hover:bg-emerald-500 text-sm font-semibold shadow-sm cursor-pointer disabled:opacity-50"
+          class="inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-emerald-500 cursor-pointer disabled:opacity-50 transition-colors"
         >
-          <svg class="w-4 h-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
           </svg>
           Export Excel
@@ -15,9 +15,9 @@
         <button
           (click)="onExportPdf()"
           [disabled]="exporting()"
-          class="inline-flex items-center px-4 py-2.5 bg-red-600 text-white rounded-lg hover:bg-red-500 text-sm font-semibold shadow-sm cursor-pointer disabled:opacity-50"
+          class="inline-flex items-center gap-1.5 rounded-xl bg-red-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-red-500 cursor-pointer disabled:opacity-50 transition-colors"
         >
-          <svg class="w-4 h-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
           </svg>
           Export PDF
@@ -27,7 +27,7 @@
   </app-page-header>
 
   <!-- Date picker -->
-  <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 mb-6">
+  <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-5 mb-6">
     <div class="max-w-xs">
       <label for="ds-date" class="block text-xs font-medium text-slate-500 mb-1.5">Date</label>
       <input
@@ -35,17 +35,20 @@
         type="date"
         [(ngModel)]="selectedDate"
         (ngModelChange)="onDateChange()"
-        class="w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+        class="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm text-slate-900 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none transition-colors"
       />
     </div>
   </div>
 
   @if (loading()) {
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 animate-pulse">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
       @for (_ of [1, 2, 3]; track $index) {
-        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 space-y-2">
-          <div class="h-3 w-24 bg-slate-200 rounded"></div>
-          <div class="h-7 w-32 bg-slate-200 rounded"></div>
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-5">
+          <div class="flex items-center justify-between mb-3">
+            <div class="h-3 w-28 bg-slate-200 rounded-full shimmer"></div>
+            <div class="w-9 h-9 bg-slate-200 rounded-xl shimmer"></div>
+          </div>
+          <div class="h-7 w-32 bg-slate-200 rounded-lg shimmer"></div>
         </div>
       }
     </div>
@@ -60,7 +63,7 @@
     </app-alert-banner>
   } @else if (sales(); as s) {
     @if (s.totalOrders === 0) {
-      <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-8 text-center">
+      <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-8 text-center">
         <svg class="w-12 h-12 text-slate-300 mx-auto mb-3" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18.75a60.07 60.07 0 0 1 15.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 0 1 3 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 0 0-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 0 1-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 0 0 3 15h-.75M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm3 0h.008v.008H18V10.5Zm-12 0h.008v.008H6V10.5Z" />
         </svg>
@@ -69,47 +72,64 @@
     } @else {
       <!-- Summary cards -->
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
-          <p class="text-sm font-medium text-slate-500">Total Orders</p>
-          <p class="text-2xl font-bold text-slate-900 mt-1">{{ s.totalOrders }}</p>
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-5">
+          <div class="flex items-center justify-between mb-3">
+            <p class="text-sm font-medium text-slate-500">Total Orders</p>
+            <div class="w-9 h-9 rounded-xl bg-indigo-50 flex items-center justify-center">
+              <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 0 0 2.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 0 0-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 0 0 .75-.75 2.25 2.25 0 0 0-.1-.664m-5.8 0A2.251 2.251 0 0 1 13.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25Z" /></svg>
+            </div>
+          </div>
+          <p class="text-2xl font-bold text-slate-900">{{ s.totalOrders }}</p>
         </div>
-        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
-          <p class="text-sm font-medium text-slate-500">Completed Revenue</p>
-          <p class="text-2xl font-bold text-emerald-700 mt-1">{{ s.completedRevenue | thaiBaht }}</p>
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-5">
+          <div class="flex items-center justify-between mb-3">
+            <p class="text-sm font-medium text-slate-500">Completed Revenue</p>
+            <div class="w-9 h-9 rounded-xl bg-emerald-50 flex items-center justify-center">
+              <svg class="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18.75a60.07 60.07 0 0 1 15.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 0 1 3 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 0 0-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 0 1-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 0 0 3 15h-.75M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm3 0h.008v.008H18V10.5Zm-12 0h.008v.008H6V10.5Z" /></svg>
+            </div>
+          </div>
+          <p class="text-2xl font-bold text-emerald-700">{{ s.completedRevenue | thaiBaht }}</p>
         </div>
-        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
-          <p class="text-sm font-medium text-slate-500">Pending Revenue</p>
-          <p class="text-2xl font-bold text-amber-600 mt-1">{{ s.pendingRevenue | thaiBaht }}</p>
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-5">
+          <div class="flex items-center justify-between mb-3">
+            <p class="text-sm font-medium text-slate-500">Pending Revenue</p>
+            <div class="w-9 h-9 rounded-xl bg-amber-50 flex items-center justify-center">
+              <svg class="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" /></svg>
+            </div>
+          </div>
+          <p class="text-2xl font-bold text-amber-600">{{ s.pendingRevenue | thaiBaht }}</p>
         </div>
       </div>
 
       <!-- Breakdowns -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
-          <h3 class="text-sm font-semibold text-slate-700 mb-3">By Status</h3>
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-5">
+          <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-4">By Status</h3>
           @if (s.ordersByStatus.length === 0) {
             <p class="text-sm text-slate-400">No orders</p>
           } @else {
             <div class="space-y-2">
               @for (item of s.ordersByStatus; track item.status) {
-                <div class="flex items-center justify-between py-1.5">
+                <div class="flex items-center justify-between py-2 border-b border-slate-50 last:border-0">
                   <app-status-badge [status]="item.status" />
-                  <span class="font-semibold text-sm text-slate-900">{{ item.count }}</span>
+                  <span class="font-bold text-sm text-slate-900">{{ item.count }}</span>
                 </div>
               }
             </div>
           }
         </div>
-        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
-          <h3 class="text-sm font-semibold text-slate-700 mb-3">By Payment Method</h3>
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-5">
+          <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-4">By Payment Method</h3>
           @if (s.ordersByPaymentMethod.length === 0) {
             <p class="text-sm text-slate-400">No orders</p>
           } @else {
             <div class="space-y-2">
               @for (m of s.ordersByPaymentMethod; track m.paymentMethod) {
-                <div class="flex items-center justify-between py-1.5">
-                  <span class="text-sm text-slate-600">{{ m.paymentMethod }}</span>
-                  <span class="font-semibold text-sm text-slate-900">{{ m.count }}</span>
+                <div class="flex items-center justify-between py-2 border-b border-slate-50 last:border-0">
+                  <span class="inline-flex items-center px-2.5 py-0.5 text-xs font-semibold rounded-full bg-slate-100 text-slate-600">
+                    {{ m.paymentMethod === 'COD' ? 'Cash on Delivery' : 'PromptPay QR' }}
+                  </span>
+                  <span class="font-bold text-sm text-slate-900">{{ m.count }}</span>
                 </div>
               }
             </div>
@@ -119,7 +139,7 @@
 
       <!-- Items table -->
       @if (s.items.length > 0) {
-        <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 overflow-hidden">
           <table class="min-w-full divide-y divide-slate-200">
             <thead class="bg-slate-50">
               <tr>
@@ -131,20 +151,20 @@
                 <th class="px-5 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Time</th>
               </tr>
             </thead>
-            <tbody class="divide-y divide-slate-200">
+            <tbody class="divide-y divide-slate-100">
               @for (item of s.items; track item.orderId) {
                 <tr class="hover:bg-slate-50 transition-colors">
                   <td class="px-5 py-3.5 text-sm font-semibold text-indigo-600 font-mono">{{ item.orderNumber }}</td>
                   <td class="px-5 py-3.5 text-sm text-slate-700">{{ item.customerName }}</td>
                   <td class="px-5 py-3.5">
-                    <span class="inline-flex items-center px-2 py-0.5 text-xs font-medium rounded bg-slate-100 text-slate-600">
-                      {{ item.paymentMethod }}
+                    <span class="inline-flex items-center px-2.5 py-0.5 text-xs font-semibold rounded-full bg-slate-100 text-slate-600">
+                      {{ item.paymentMethod === 'COD' ? 'COD' : 'PromptPay' }}
                     </span>
                   </td>
                   <td class="px-5 py-3.5">
                     <app-status-badge [status]="item.status" />
                   </td>
-                  <td class="px-5 py-3.5 text-sm text-right font-medium text-slate-700">{{ item.totalAmount | thaiBaht }}</td>
+                  <td class="px-5 py-3.5 text-sm text-right font-semibold text-slate-700">{{ item.totalAmount | thaiBaht }}</td>
                   <td class="px-5 py-3.5 text-sm text-slate-500">{{ item.createdAt | date:'shortTime' }}</td>
                 </tr>
               }

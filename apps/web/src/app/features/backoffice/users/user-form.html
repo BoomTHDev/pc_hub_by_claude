@@ -11,7 +11,7 @@
 
   <h1 class="text-2xl font-bold text-slate-900 mb-6">Create {{ roleLabel() }}</h1>
 
-  <form #userForm="ngForm" (ngSubmit)="onSubmit(userForm)" class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden max-w-lg">
+  <form #userForm="ngForm" (ngSubmit)="onSubmit(userForm)" class="bg-white rounded-2xl shadow-sm border border-slate-200/80 overflow-hidden max-w-lg">
     <div class="p-6 space-y-5">
       <div>
         <label for="uf-fn" class="block text-sm font-medium text-slate-700 mb-1.5">First Name</label>
@@ -25,7 +25,7 @@
           placeholder="First name"
           autocomplete="given-name"
           [class.input-error]="fnRef.invalid && (fnRef.touched || submitted)"
-          class="w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+          class="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none transition-colors"
         />
         @if (fnRef.invalid && (fnRef.touched || submitted)) {
           <p class="mt-1 text-xs text-red-600">First name is required.</p>
@@ -43,7 +43,7 @@
           placeholder="Last name"
           autocomplete="family-name"
           [class.input-error]="lnRef.invalid && (lnRef.touched || submitted)"
-          class="w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+          class="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none transition-colors"
         />
         @if (lnRef.invalid && (lnRef.touched || submitted)) {
           <p class="mt-1 text-xs text-red-600">Last name is required.</p>
@@ -62,7 +62,7 @@
           placeholder="user@example.com"
           autocomplete="email"
           [class.input-error]="(emRef.invalid && (emRef.touched || submitted)) || serverFieldErrors()['email']"
-          class="w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+          class="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none transition-colors"
         />
         @if (emRef.invalid && (emRef.touched || submitted)) {
           <p class="mt-1 text-xs text-red-600">
@@ -89,7 +89,7 @@
           placeholder="0812345678"
           autocomplete="tel"
           [class.input-error]="phRef.invalid && (phRef.touched || submitted)"
-          class="w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+          class="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none transition-colors"
         />
         @if (phRef.invalid && (phRef.touched || submitted)) {
           <p class="mt-1 text-xs text-red-600">
@@ -114,7 +114,7 @@
           placeholder="Minimum 8 characters"
           autocomplete="new-password"
           [class.input-error]="pwRef.invalid && (pwRef.touched || submitted)"
-          class="w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+          class="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none transition-colors"
         />
         @if (pwRef.invalid && (pwRef.touched || submitted)) {
           <p class="mt-1 text-xs text-red-600">
@@ -129,22 +129,22 @@
     </div>
 
     @if (errorMsg()) {
-      <div class="px-6">
+      <div class="px-6 pb-2">
         <app-alert-banner type="error" [message]="errorMsg()" />
       </div>
     }
 
-    <div class="bg-slate-50 border-t border-slate-200 px-6 py-4 flex items-center gap-3">
+    <div class="bg-slate-50/60 border-t border-slate-200 px-6 py-4 flex items-center gap-3">
       <button
         type="submit"
         [disabled]="saving()"
-        class="inline-flex items-center px-5 py-2.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-500 text-sm font-semibold shadow-sm cursor-pointer disabled:opacity-50"
+        class="rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm shadow-indigo-600/20 hover:from-indigo-500 hover:to-violet-500 disabled:from-slate-300 disabled:to-slate-300 disabled:shadow-none disabled:cursor-not-allowed cursor-pointer transition-all duration-200"
       >
         {{ saving() ? 'Creating...' : 'Create ' + roleLabel() }}
       </button>
       <a
         routerLink="/backoffice/users"
-        class="inline-flex items-center px-5 py-2.5 border border-slate-300 bg-white text-slate-700 rounded-lg hover:bg-slate-50 text-sm font-semibold"
+        class="rounded-xl border border-slate-200 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 hover:border-slate-300 shadow-sm transition-all duration-150"
       >
         Cancel
       </a>
