@@ -1,8 +1,8 @@
 <div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
   <!-- Back link -->
-  <nav class="flex items-center gap-2 text-sm text-slate-500 mb-6">
-    <a routerLink="/account/addresses" class="hover:text-slate-900 inline-flex items-center gap-1">
-      <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" /></svg>
+  <nav class="flex items-center gap-1.5 text-sm text-slate-500 mb-7">
+    <a routerLink="/account/addresses" class="hover:text-indigo-600 transition-colors inline-flex items-center gap-1">
+      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" /></svg>
       My Addresses
     </a>
   </nav>
@@ -17,10 +17,10 @@
     </div>
   }
 
-  <form #addrForm="ngForm" (ngSubmit)="onSubmit(addrForm)" class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+  <form #addrForm="ngForm" (ngSubmit)="onSubmit(addrForm)" class="bg-white rounded-2xl shadow-sm border border-slate-200/80 overflow-hidden">
     <!-- Label section -->
     <div class="p-6 border-b border-slate-100">
-      <h2 class="text-sm font-medium text-slate-500 uppercase tracking-wider mb-4">Address Label</h2>
+      <h2 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-4">Address Label</h2>
       <div>
         <label for="label" class="block text-sm font-medium text-slate-700 mb-1.5">Label</label>
         <input
@@ -32,19 +32,19 @@
           required
           placeholder="e.g. Home, Office, Warehouse"
           [class.input-error]="(labelRef.invalid && (labelRef.touched || submitted)) || serverFieldErrors()['label']"
-          class="block w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none"
+          class="block w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none transition-colors"
         />
         @if (labelRef.invalid && (labelRef.touched || submitted)) {
-          <p class="mt-1 text-xs text-red-600">Label is required.</p>
+          <p class="mt-1.5 text-xs text-red-600">Label is required.</p>
         } @else if (serverFieldErrors()['label']) {
-          <p class="mt-1 text-xs text-red-600">{{ serverFieldErrors()['label'] }}</p>
+          <p class="mt-1.5 text-xs text-red-600">{{ serverFieldErrors()['label'] }}</p>
         }
       </div>
     </div>
 
     <!-- Contact section -->
     <div class="p-6 border-b border-slate-100">
-      <h2 class="text-sm font-medium text-slate-500 uppercase tracking-wider mb-4">Contact Information</h2>
+      <h2 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-4">Contact Information</h2>
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label for="recipientName" class="block text-sm font-medium text-slate-700 mb-1.5">
@@ -60,12 +60,12 @@
             autocomplete="name"
             placeholder="Full name"
             [class.input-error]="(recipientRef.invalid && (recipientRef.touched || submitted)) || serverFieldErrors()['recipientName']"
-            class="block w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none"
+            class="block w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none transition-colors"
           />
           @if (recipientRef.invalid && (recipientRef.touched || submitted)) {
-            <p class="mt-1 text-xs text-red-600">Recipient name is required.</p>
+            <p class="mt-1.5 text-xs text-red-600">Recipient name is required.</p>
           } @else if (serverFieldErrors()['recipientName']) {
-            <p class="mt-1 text-xs text-red-600">{{ serverFieldErrors()['recipientName'] }}</p>
+            <p class="mt-1.5 text-xs text-red-600">{{ serverFieldErrors()['recipientName'] }}</p>
           }
         </div>
         <div>
@@ -83,10 +83,10 @@
             autocomplete="tel"
             placeholder="08X-XXX-XXXX"
             [class.input-error]="(phoneRef.invalid && (phoneRef.touched || submitted)) || serverFieldErrors()['phoneNumber']"
-            class="block w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none"
+            class="block w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none transition-colors"
           />
           @if (phoneRef.invalid && (phoneRef.touched || submitted)) {
-            <p class="mt-1 text-xs text-red-600">
+            <p class="mt-1.5 text-xs text-red-600">
               @if (phoneRef.errors?.['required']) {
                 Phone number is required.
               } @else if (phoneRef.errors?.['minlength']) {
@@ -94,7 +94,7 @@
               }
             </p>
           } @else if (serverFieldErrors()['phoneNumber']) {
-            <p class="mt-1 text-xs text-red-600">{{ serverFieldErrors()['phoneNumber'] }}</p>
+            <p class="mt-1.5 text-xs text-red-600">{{ serverFieldErrors()['phoneNumber'] }}</p>
           }
         </div>
       </div>
@@ -102,7 +102,7 @@
 
     <!-- Address section -->
     <div class="p-6 border-b border-slate-100">
-      <h2 class="text-sm font-medium text-slate-500 uppercase tracking-wider mb-4">Address</h2>
+      <h2 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-4">Address</h2>
       <div class="space-y-4">
         <div>
           <label for="line1" class="block text-sm font-medium text-slate-700 mb-1.5">
@@ -118,12 +118,12 @@
             autocomplete="address-line1"
             placeholder="House number, street, building"
             [class.input-error]="(line1Ref.invalid && (line1Ref.touched || submitted)) || serverFieldErrors()['line1']"
-            class="block w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none"
+            class="block w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none transition-colors"
           />
           @if (line1Ref.invalid && (line1Ref.touched || submitted)) {
-            <p class="mt-1 text-xs text-red-600">Address line 1 is required.</p>
+            <p class="mt-1.5 text-xs text-red-600">Address line 1 is required.</p>
           } @else if (serverFieldErrors()['line1']) {
-            <p class="mt-1 text-xs text-red-600">{{ serverFieldErrors()['line1'] }}</p>
+            <p class="mt-1.5 text-xs text-red-600">{{ serverFieldErrors()['line1'] }}</p>
           }
         </div>
 
@@ -139,7 +139,7 @@
             name="line2"
             autocomplete="address-line2"
             placeholder="Floor, unit, village"
-            class="block w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none"
+            class="block w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none transition-colors"
           />
         </div>
 
@@ -157,10 +157,10 @@
               required
               placeholder="Subdistrict / Tambon"
               [class.input-error]="subdistrictRef.invalid && (subdistrictRef.touched || submitted)"
-              class="block w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none"
+              class="block w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none transition-colors"
             />
             @if (subdistrictRef.invalid && (subdistrictRef.touched || submitted)) {
-              <p class="mt-1 text-xs text-red-600">Subdistrict is required.</p>
+              <p class="mt-1.5 text-xs text-red-600">Subdistrict is required.</p>
             }
           </div>
           <div>
@@ -176,10 +176,10 @@
               required
               placeholder="District / Amphoe"
               [class.input-error]="districtRef.invalid && (districtRef.touched || submitted)"
-              class="block w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none"
+              class="block w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none transition-colors"
             />
             @if (districtRef.invalid && (districtRef.touched || submitted)) {
-              <p class="mt-1 text-xs text-red-600">District is required.</p>
+              <p class="mt-1.5 text-xs text-red-600">District is required.</p>
             }
           </div>
         </div>
@@ -198,10 +198,10 @@
               required
               placeholder="Province"
               [class.input-error]="provinceRef.invalid && (provinceRef.touched || submitted)"
-              class="block w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none"
+              class="block w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none transition-colors"
             />
             @if (provinceRef.invalid && (provinceRef.touched || submitted)) {
-              <p class="mt-1 text-xs text-red-600">Province is required.</p>
+              <p class="mt-1.5 text-xs text-red-600">Province is required.</p>
             }
           </div>
           <div>
@@ -219,10 +219,10 @@
               autocomplete="postal-code"
               placeholder="10XXX"
               [class.input-error]="(postalRef.invalid && (postalRef.touched || submitted)) || serverFieldErrors()['postalCode']"
-              class="block w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none"
+              class="block w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none transition-colors"
             />
             @if (postalRef.invalid && (postalRef.touched || submitted)) {
-              <p class="mt-1 text-xs text-red-600">
+              <p class="mt-1.5 text-xs text-red-600">
                 @if (postalRef.errors?.['required']) {
                   Postal code is required.
                 } @else if (postalRef.errors?.['minlength']) {
@@ -230,7 +230,7 @@
                 }
               </p>
             } @else if (serverFieldErrors()['postalCode']) {
-              <p class="mt-1 text-xs text-red-600">{{ serverFieldErrors()['postalCode'] }}</p>
+              <p class="mt-1.5 text-xs text-red-600">{{ serverFieldErrors()['postalCode'] }}</p>
             }
           </div>
         </div>
@@ -239,34 +239,34 @@
 
     <!-- Settings section -->
     <div class="p-6 border-b border-slate-100">
-      <label for="isDefault" class="flex items-center gap-3 cursor-pointer">
+      <label for="isDefault" class="flex items-start gap-3.5 cursor-pointer group">
         <input
           id="isDefault"
           type="checkbox"
           [(ngModel)]="form.isDefault"
           name="isDefault"
-          class="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+          class="mt-0.5 h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
         />
         <div>
-          <span class="text-sm font-medium text-slate-900">Set as default address</span>
-          <p class="text-xs text-slate-500">This address will be pre-selected during checkout.</p>
+          <span class="text-sm font-medium text-slate-900 group-hover:text-indigo-700 transition-colors">Set as default address</span>
+          <p class="text-xs text-slate-500 mt-0.5">This address will be pre-selected during checkout.</p>
         </div>
       </label>
     </div>
 
     <!-- Actions -->
-    <div class="bg-slate-50 px-6 py-4 flex items-center justify-end gap-3">
+    <div class="bg-slate-50/60 px-6 py-5 flex items-center justify-end gap-3">
       <button
         type="button"
         (click)="onCancel()"
-        class="rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 shadow-sm cursor-pointer"
+        class="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 hover:border-slate-300 shadow-sm cursor-pointer transition-all duration-150"
       >
         Cancel
       </button>
       <button
         type="submit"
         [disabled]="saving()"
-        class="rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-indigo-500 shadow-sm disabled:bg-slate-300 disabled:cursor-not-allowed cursor-pointer"
+        class="rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 px-5 py-2.5 text-sm font-semibold text-white shadow-md shadow-indigo-600/20 hover:from-indigo-500 hover:to-violet-500 disabled:from-slate-300 disabled:to-slate-300 disabled:shadow-none disabled:cursor-not-allowed cursor-pointer transition-all duration-200"
       >
         @if (saving()) {
           <span class="inline-flex items-center gap-2">
